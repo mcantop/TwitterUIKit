@@ -9,21 +9,33 @@
 /* Begin PBXBuildFile section */
 		525202E6290715D1005CE36C /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 525202E5290715D1005CE36C /* AppDelegate.swift */; };
 		525202E8290715D1005CE36C /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 525202E7290715D1005CE36C /* SceneDelegate.swift */; };
-		525202EA290715D1005CE36C /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 525202E9290715D1005CE36C /* ViewController.swift */; };
 		525202ED290715D1005CE36C /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 525202EB290715D1005CE36C /* Main.storyboard */; };
 		525202EF290715D1005CE36C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 525202EE290715D1005CE36C /* Assets.xcassets */; };
 		525202F2290715D1005CE36C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 525202F0290715D1005CE36C /* LaunchScreen.storyboard */; };
+		52520300290716CC005CE36C /* MainTabBarController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 525202FF290716CC005CE36C /* MainTabBarController.swift */; };
+		52520302290717FA005CE36C /* FeedController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52520301290717FA005CE36C /* FeedController.swift */; };
+		5252030429071829005CE36C /* ExploreController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5252030329071829005CE36C /* ExploreController.swift */; };
+		5252030629071841005CE36C /* NotificationsController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5252030529071841005CE36C /* NotificationsController.swift */; };
+		5252030829071854005CE36C /* MessagesController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5252030729071854005CE36C /* MessagesController.swift */; };
+		5252030C29071C40005CE36C /* UIImage+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5252030B29071C40005CE36C /* UIImage+Extension.swift */; };
+		5252030F29072B54005CE36C /* Constraints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5252030E29072B54005CE36C /* Constraints.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		525202E2290715D1005CE36C /* TwitterUIKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TwitterUIKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		525202E5290715D1005CE36C /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		525202E7290715D1005CE36C /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		525202E9290715D1005CE36C /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		525202EC290715D1005CE36C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		525202EE290715D1005CE36C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		525202F1290715D1005CE36C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		525202F3290715D1005CE36C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		525202FF290716CC005CE36C /* MainTabBarController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabBarController.swift; sourceTree = "<group>"; };
+		52520301290717FA005CE36C /* FeedController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedController.swift; sourceTree = "<group>"; };
+		5252030329071829005CE36C /* ExploreController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreController.swift; sourceTree = "<group>"; };
+		5252030529071841005CE36C /* NotificationsController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsController.swift; sourceTree = "<group>"; };
+		5252030729071854005CE36C /* MessagesController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessagesController.swift; sourceTree = "<group>"; };
+		5252030B29071C40005CE36C /* UIImage+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extension.swift"; sourceTree = "<group>"; };
+		5252030E29072B54005CE36C /* Constraints.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Constraints.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,15 +68,77 @@
 		525202E4290715D1005CE36C /* TwitterUIKit */ = {
 			isa = PBXGroup;
 			children = (
+				525202FE29071627005CE36C /* Model */,
+				525202FD29071625005CE36C /* View */,
+				525202FC29071623005CE36C /* ViewModel */,
+				525202FB29071621005CE36C /* Controllers */,
+				525202FA2907161F005CE36C /* API */,
+				525202F929071611005CE36C /* Utils */,
 				525202E5290715D1005CE36C /* AppDelegate.swift */,
 				525202E7290715D1005CE36C /* SceneDelegate.swift */,
-				525202E9290715D1005CE36C /* ViewController.swift */,
 				525202EB290715D1005CE36C /* Main.storyboard */,
-				525202EE290715D1005CE36C /* Assets.xcassets */,
 				525202F0290715D1005CE36C /* LaunchScreen.storyboard */,
+				525202EE290715D1005CE36C /* Assets.xcassets */,
 				525202F3290715D1005CE36C /* Info.plist */,
 			);
 			path = TwitterUIKit;
+			sourceTree = "<group>";
+		};
+		525202F929071611005CE36C /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+				5252030D29072B35005CE36C /* Extensions */,
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		525202FA2907161F005CE36C /* API */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = API;
+			sourceTree = "<group>";
+		};
+		525202FB29071621005CE36C /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				525202FF290716CC005CE36C /* MainTabBarController.swift */,
+				52520301290717FA005CE36C /* FeedController.swift */,
+				5252030329071829005CE36C /* ExploreController.swift */,
+				5252030529071841005CE36C /* NotificationsController.swift */,
+				5252030729071854005CE36C /* MessagesController.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		525202FC29071623005CE36C /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		525202FD29071625005CE36C /* View */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		525202FE29071627005CE36C /* Model */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		5252030D29072B35005CE36C /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				5252030E29072B54005CE36C /* Constraints.swift */,
+				5252030B29071C40005CE36C /* UIImage+Extension.swift */,
+			);
+			path = Extensions;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -138,9 +212,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				525202EA290715D1005CE36C /* ViewController.swift in Sources */,
+				5252030629071841005CE36C /* NotificationsController.swift in Sources */,
+				5252030F29072B54005CE36C /* Constraints.swift in Sources */,
+				5252030829071854005CE36C /* MessagesController.swift in Sources */,
 				525202E6290715D1005CE36C /* AppDelegate.swift in Sources */,
+				5252030C29071C40005CE36C /* UIImage+Extension.swift in Sources */,
+				5252030429071829005CE36C /* ExploreController.swift in Sources */,
 				525202E8290715D1005CE36C /* SceneDelegate.swift in Sources */,
+				52520300290716CC005CE36C /* MainTabBarController.swift in Sources */,
+				52520302290717FA005CE36C /* FeedController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
