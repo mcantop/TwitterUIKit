@@ -11,7 +11,7 @@ final class MainTabBarController: UITabBarController {
     // MARK: - Properties
     let buttonSize: CGFloat = 56
     
-    let actionButton: UIButton = {
+    lazy var actionButton: UIButton = {
         let button = UIButton(type: .system)
         button.tintColor = .white
         button.backgroundColor = .twitterBlue
@@ -42,7 +42,6 @@ final class MainTabBarController: UITabBarController {
             actionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -64),
             actionButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -16),
         ])
-        
 //        actionButton.anchor(bottom: view.safeAreaLayoutGuide.bottomAnchor, right: view.rightAnchor, paddingBottom: 64, paddingRight: 16, width: buttonSize, height: buttonSize)
     }
     
@@ -61,10 +60,10 @@ final class MainTabBarController: UITabBarController {
         let exploreNavigation = templateNavigationController(image: UIImage.explore, rootViewController: explore)
         
         let notifications = NotificationsController()
-        let notificationsNavigation = templateNavigationController(image: UIImage.notifications, rootViewController: notifications)
+        let notificationsNavigation = templateNavigationController(image: UIImage.notification, rootViewController: notifications)
         
         let messages = MessagesController()
-        let messagesNavigation = templateNavigationController(image: UIImage.messages, rootViewController: messages)
+        let messagesNavigation = templateNavigationController(image: UIImage.message, rootViewController: messages)
         
         viewControllers = [feedNavigation, exploreNavigation, notificationsNavigation, messagesNavigation]
     }
@@ -89,6 +88,7 @@ final class MainTabBarController: UITabBarController {
     private func templateNavigationController(image: UIImage?, rootViewController: UIViewController) -> UINavigationController {
         let nav = UINavigationController(rootViewController: rootViewController)
         nav.tabBarItem.image = image
+        
         return nav
     }
 }
