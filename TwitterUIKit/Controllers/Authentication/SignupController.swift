@@ -7,8 +7,8 @@
 
 import UIKit
 import FirebaseAuth
-import FirebaseCore
 import FirebaseFirestore
+import FirebaseStorage
 
 final class SignupController: UIViewController {
     // MARK: - Properties
@@ -114,27 +114,18 @@ final class SignupController: UIViewController {
         guard let fullname = fullnameTextField.text else { return }
         guard let username = usernameTextField.text else { return }
         
-        guard let imageData = profileImage.jpegData(compressionQuality: 0.3) else { return }
-        let filename = NSUUID().uuidString
-        let storageRef = Storage
+        let credentials = AuthCredentials(email: email, password: password, fullname: fullname, username: username, profileImage: profileImage)
         
-        Auth.auth().createUser(withEmail: email, password: password) { result, error in
-            if let error = error {
-                print("DEBUG: Error while creating user: \(error.localizedDescription)")
-                return
-            }
+        AuthService.shared.registerUser(credentials: credentials) { error, ref in
+            let scenes = UIApplication.shared.connectedScenes
+            let windowScene = scenes.first as? UIWindowScene
+            guard let window = windowScene?.windows.first(where: { $0.isKeyWindow }) else { return }
             
-            guard let user = result?.user else { return }
+            guard let tab = window.rootViewController as? MainTabBarController else { return }
             
-            let data = ["email": email, "username": username, "fullname": fullname]
+            tab.authenticateUserAndConfigureUI()
             
-            Firestore.firestore().collection("users")
-                .document(user.uid)
-                .setData(data) { _ in
-                    print("Uploaded user data")
-                }
-            
-            print("Successfully registered user.")
+            self.dismiss(animated: true)
         }
     }
     

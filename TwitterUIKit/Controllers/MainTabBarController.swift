@@ -6,10 +6,11 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 final class MainTabBarController: UITabBarController {
     // MARK: - Properties
-    let buttonSize: CGFloat = 56
+    private let buttonSize: CGFloat = 56
     
     lazy var actionButton: UIButton = {
         let button = UIButton(type: .system)
@@ -24,10 +25,38 @@ final class MainTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        configureUI()
-        configureViewControllers()
-        configureNavigationBar()
-        configureTabBarBackground()
+//        logoutUser()
+        view.backgroundColor = .twitterBlue
+        authenticateUserAndConfigureUI()
+    }
+    
+    // MARK: - API
+    func authenticateUserAndConfigureUI() {
+        if Auth.auth().currentUser == nil {
+            DispatchQueue.main.async {
+                let nav = UINavigationController(rootViewController: LoginController())
+                nav.modalPresentationStyle = .fullScreen
+                self.present(nav, animated: true)
+            }
+        } else {
+            configureUI()
+            configureViewControllers()
+            configureNavigationBar()
+            configureTabBarBackground()
+            fetchUser()
+        }
+    }
+    
+    func fetchUser() {
+        UserService.shared.fetchUser()
+    }
+    
+    private func logoutUser() {
+        do {
+            try Auth.auth().signOut()
+        } catch let error {
+            print("DEBUG: Failed to sign out with error: \(error.localizedDescription)")
+        }
     }
     
     // MARK: - Helpers
