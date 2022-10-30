@@ -11,6 +11,14 @@ import FirebaseAuth
 final class MainTabBarController: UITabBarController {
     // MARK: - Properties
     private let buttonSize: CGFloat = 56
+    private var user: User? {
+        didSet {
+            guard let nav = viewControllers?[0] as? UINavigationController else { return }
+            guard let feed = nav.viewControllers[0] as? FeedController else { return }
+            
+            feed.user = user
+        }
+    }
     
     lazy var actionButton: UIButton = {
         let button = UIButton(type: .system)
@@ -48,7 +56,9 @@ final class MainTabBarController: UITabBarController {
     }
     
     func fetchUser() {
-        UserService.shared.fetchUser()
+        UserService.shared.fetchUser { user in
+            self.user = user
+        }
     }
     
     private func logoutUser() {
@@ -78,7 +88,10 @@ final class MainTabBarController: UITabBarController {
     
     @objc
     private func actionButtonTapped() {
-        print("123")
+        guard let user = user else { return }
+        let nav = UINavigationController(rootViewController: UploadTweetController(user: user))
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true)
     }
     
     private func configureViewControllers() {

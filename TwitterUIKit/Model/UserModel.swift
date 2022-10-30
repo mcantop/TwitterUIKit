@@ -5,14 +5,12 @@
 //  Created by Maciej on 29/10/2022.
 //
 
-import FirebaseCoreInternal
-import FirebaseFirestore
-import FirebaseCore
+import FirebaseFirestoreSwift
 
 struct User: Identifiable, Codable {
-    var id: String?
+    @DocumentID var id: String?
     let email: String
     let username: String
     let fullname: String
-    let profileImageUrl: String
+    let profileImageUrl: URL
 }
