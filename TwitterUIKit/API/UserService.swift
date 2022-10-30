@@ -14,7 +14,6 @@ struct UserService {
     
     func fetchUser(completion: @escaping(User) -> Void) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
-        print("DEBUG: Fetching user for uid: \(uid)")
         
         Firestore.firestore().collection("users")
             .document(uid)

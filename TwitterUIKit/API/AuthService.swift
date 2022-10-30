@@ -55,11 +55,11 @@ struct AuthService {
                     Firestore.firestore().collection("users")
                         .document(user.uid)
                         .setData(data) { error in
-                            print("Uploaded user data")
+                            print("DEBUGUploaded user data")
                             completion(error, storageRef)
                         }
                     
-                    print("Successfully registered user.")
+                    print("DEBUG: Successfully created a new user account: \(user.uid).")
                 }
                 
             }

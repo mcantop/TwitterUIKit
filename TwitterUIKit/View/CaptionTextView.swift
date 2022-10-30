@@ -27,14 +27,13 @@ final class CaptionTextView: UITextView {
         backgroundColor = .white
         isScrollEnabled = true
         
+        NotificationCenter.default.addObserver(self, selector: #selector(handleTextInputChange), name: UITextView.textDidChangeNotification, object: nil)
+        
         placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-//            heightAnchor.constraint(equalToConstant: 300),
             placeholderLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
             placeholderLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4)
         ])
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(handleTextInputChange), name: UITextView.textDidChangeNotification, object: nil)
     }
     
     required init?(coder: NSCoder) {
