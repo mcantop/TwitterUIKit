@@ -116,16 +116,21 @@ final class SignupController: UIViewController {
         
         let credentials = AuthCredentials(email: email, password: password, fullname: fullname, username: username, profileImage: profileImage)
         
-        AuthService.shared.registerUser(credentials: credentials) { error, ref in
-            let scenes = UIApplication.shared.connectedScenes
-            let windowScene = scenes.first as? UIWindowScene
-            guard let window = windowScene?.windows.first(where: { $0.isKeyWindow }) else { return }
-            
-            guard let tab = window.rootViewController as? MainTabBarController else { return }
-            
-            tab.authenticateUserAndConfigureUI()
-            
-            self.dismiss(animated: true)
+        AuthService.shared.registerUser(credentials: credentials) { result in
+            switch result {
+            case .failure(let error):
+                print("DEBUG: Error while registering user with error: \(error.localizedDescription).")
+            case .success:
+                let scenes = UIApplication.shared.connectedScenes
+                let windowScene = scenes.first as? UIWindowScene
+                guard let window = windowScene?.windows.first(where: { $0.isKeyWindow }) else { return }
+                
+                guard let tab = window.rootViewController as? MainTabBarController else { return }
+                
+                tab.authenticateUserAndConfigureUI()
+                
+                self.dismiss(animated: true)
+            }
         }
     }
     

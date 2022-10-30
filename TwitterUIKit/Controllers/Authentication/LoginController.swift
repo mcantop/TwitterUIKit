@@ -80,7 +80,7 @@ final class LoginController: UIViewController {
         
         AuthService.shared.logUserIn(withEmail: email, password: password) { result, error in
             if let error = error {
-                print("DEBUG: Error loggin in: \(error.localizedDescription)")
+                print("DEBUG: Error logging in with error: \(error.localizedDescription).")
                 return
             }
             
