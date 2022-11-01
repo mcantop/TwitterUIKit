@@ -33,7 +33,7 @@ final class MainTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        logoutUser()
+//        logoutUser()
         view.backgroundColor = .twitterBlue
         authenticateUserAndConfigureUI()
     }
@@ -95,7 +95,7 @@ final class MainTabBarController: UITabBarController {
     }
     
     private func configureViewControllers() {
-        let feed = FeedController()
+        let feed = FeedController(collectionViewLayout: UICollectionViewFlowLayout())
         let feedNavigation = templateNavigationController(image: UIImage.feed, rootViewController: feed)
 
         let explore = ExploreController()

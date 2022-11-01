@@ -32,4 +32,26 @@ struct TweetService {
                 completion(.success(()))
             }
     }
+    
+    func fetchTweets(completion: @escaping([Tweet]) -> Void) {
+        Firestore.firestore().collection("tweets")
+            .order(by: "timestamp", descending: true)
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("DEBUG: Error while fetching tweets with error: \(error.localizedDescription).")
+                }
+                guard let documents = snapshot?.documents else { return }
+                
+//                var tweets = [Tweet]()
+//
+//                documents.forEach { document in
+//                    guard let tweet = try? document.data(as: Tweet.self) else { return }
+//                    tweets.append(tweet)
+//                }
+                
+                let tweets = documents.compactMap { try? $0.data(as: Tweet.self) }
+                
+                completion(tweets)
+            }
+    }
 }

@@ -8,12 +8,14 @@
 import UIKit
 import SDWebImage
 
-final class FeedController: UIViewController {
+final class FeedController: UICollectionViewController {
     // MARK: - Properties
     var user: User? {
-        didSet {
-            configureProfileButton()
-        }
+        didSet { configureProfileButton() }
+    }
+    
+    private var tweets = [Tweet]() {
+        didSet { collectionView.reloadData() }
     }
     
     // MARK: - Lifecycle
@@ -21,6 +23,15 @@ final class FeedController: UIViewController {
         super.viewDidLoad()
         
         configureUI()
+        fetchTweets()
+    }
+    
+    // MARK: - API
+    private func fetchTweets() {
+        TweetService.shared.fetchTweets { tweets in
+            self.tweets = tweets
+            print("DEBUG: Number of tweets: \(tweets.count).")
+        }
     }
     
     // MARK: - Helpers
@@ -31,6 +42,9 @@ final class FeedController: UIViewController {
         imageView.image = UIImage.twitterLogoBlue
         imageView.contentMode = .scaleAspectFit
         imageView.setDimensions(width: 44, height: 44)
+        
+        collectionView.register(TweetCell.self, forCellWithReuseIdentifier: TweetCell.reuseIdentifier)
+        collectionView.backgroundColor = .white
         
         navigationItem.titleView = imageView
     }
@@ -45,5 +59,28 @@ final class FeedController: UIViewController {
         profileImageView.sd_setImage(with: user.profileImageUrl)
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileImageView)
+    }
+}
+
+// MARK: - UICollectionViewDelegate/DataSource
+extension FeedController {
+    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return tweets.count
+    }
+    
+    override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TweetCell.reuseIdentifier, for: indexPath) as! TweetCell
+        
+        print("DEBUG: Index path is \(indexPath.row)")
+        cell.tweet = tweets[indexPath.row]
+        
+        return cell
+    }
+}
+
+// MARK: - UICollectionViewDelegateFlowLayout
+extension FeedController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        return CGSize(width: view.frame.width, height: 120)
     }
 }
