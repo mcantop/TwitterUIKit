@@ -24,6 +24,7 @@ final class FeedController: UICollectionViewController {
         
         configureUI()
         fetchTweets()
+        print("sup mate")
     }
     
     // MARK: - API
