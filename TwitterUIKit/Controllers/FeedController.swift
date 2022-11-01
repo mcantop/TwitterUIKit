@@ -24,7 +24,7 @@ final class FeedController: UICollectionViewController {
         
         configureUI()
         fetchTweets()
-        print("sup mateee")
+        print("sup mateeee")
     }
     
     // MARK: - API
