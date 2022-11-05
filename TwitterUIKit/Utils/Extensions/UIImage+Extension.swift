@@ -20,6 +20,7 @@ extension UIImage {
         case mail
         case plusPhoto
         case person
+        case chevronLeft
         
         var description: String {
             switch self {
@@ -34,6 +35,7 @@ extension UIImage {
             case .mail: return "envelope"
             case .plusPhoto: return "plus_photo"
             case .person: return "person"
+            case .chevronLeft: return "chevron.left"
             }
         }
     }
@@ -49,4 +51,5 @@ extension UIImage {
     static let mail = UIImage(systemName: Images.mail.description)
     static let plusPhoto = UIImage(named: Images.plusPhoto.description)
     static let person = UIImage(systemName: Images.person.description)
+    static let chevronLeft = UIImage(systemName: Images.chevronLeft.description)
 }

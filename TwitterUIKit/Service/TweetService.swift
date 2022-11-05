@@ -16,11 +16,12 @@ struct TweetService {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
         let data = ["uid": uid,
-//                    "timestamp": Timestamp(date: Date()),
-                    "timestamp": Int(Date().timeIntervalSince1970),
+                    "timestamp": Timestamp(date: Date()),
+//                    "timestamp": Int(Date().timeIntervalSince1970),
                     "caption": caption,
                     "likes": 0,
                     "retweets": 0] as [String: Any]
+        
         
         Firestore.firestore().collection("tweets").document()
             .setData(data) { error in
@@ -28,6 +29,9 @@ struct TweetService {
                     completion(.failure(error))
                     return
                 }
+                
+                Firestore.firestore().collection("user-tweets").document()
+                    .setData(["tweetID": .d])
                 
                 completion(.success(()))
             }
@@ -42,16 +46,16 @@ struct TweetService {
                 }
                 guard let documents = snapshot?.documents else { return }
                 
-//                var tweets = [Tweet]()
-//
-//                documents.forEach { document in
-//                    guard let tweet = try? document.data(as: Tweet.self) else { return }
-//                    tweets.append(tweet)
-//                }
-                
-                let tweets = documents.compactMap { try? $0.data(as: Tweet.self) }
-                
-                completion(tweets)
+                var tweets = [Tweet]()
+
+                documents.forEach { document in
+                    guard var tweet = try? document.data(as: Tweet.self) else { return }
+                    UserService.shared.fetchUser(withUid: tweet.uid) { user in
+                        tweet.user = user
+                        tweets.append(tweet)
+                        completion(tweets)
+                    }
+                }
             }
     }
 }

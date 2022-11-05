@@ -11,9 +11,7 @@ import FirebaseFirestore
 struct UserService {
     static let shared = UserService()
     
-    func fetchUser(completion: @escaping(User) -> Void) {
-        guard let uid = Auth.auth().currentUser?.uid else { return }
-        
+    func fetchUser(withUid uid: String, completion: @escaping(User) -> Void) {        
         Firestore.firestore().collection("users")
             .document(uid)
             .getDocument { snapshot, _ in
