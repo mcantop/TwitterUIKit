@@ -10,6 +10,8 @@ import UIKit
 final class UploadTweetController: UIViewController {
     // MARK: - Properties
     private let user: User
+    private let config: UploadTweetConfiguration
+    private lazy var viewModel = UploadTweetViewModel(config: config)
     
     private lazy var actionButton: UIButton = {
         let button = UIButton(type: .system)
@@ -34,11 +36,21 @@ final class UploadTweetController: UIViewController {
         return imageView
     }()
     
+    private lazy var replyLabel: UILabel = {
+        let label = UILabel()
+        label.font = UIFont.systemFont(ofSize: 14)
+        label.textColor = .lightGray
+        label.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
+        label.text = "replying to @future"
+        return label
+    }()
+    
     private let captionTextView = CaptionTextView()
     
     // MARK: - Lifecycle
-    init(user: User) {
+    init(user: User, config: UploadTweetConfiguration) {
         self.user = user
+        self.config = config
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -51,6 +63,13 @@ final class UploadTweetController: UIViewController {
         
         configureUI()
         configureLayout()
+        
+        switch config {
+        case .tweet:
+            print("DEBUG: Config is tweet")
+        case .reply(let tweet):
+            print("DEBUG: Replying to \(tweet.caption)")
+        }
     }
     
     // MARK: - Selectors
@@ -81,21 +100,31 @@ final class UploadTweetController: UIViewController {
         
         configureNavigationBar()
         
+        view.addSubview(replyLabel)
         view.addSubview(profileImageView)
         view.addSubview(captionTextView)
         
         profileImageView.sd_setImage(with: user.profileImageUrl)
+        actionButton.setTitle(viewModel.actionButtonTitle, for: .normal)
+        captionTextView.placeholderLabel.text = viewModel.placeholderText
+        replyLabel.isHidden = !viewModel.shouldshowReplyLabel
+        guard let replyText = viewModel.replyText else { return }
+        replyLabel.text = replyText
     }
     
     private func configureLayout() {
+        replyLabel.translatesAutoresizingMaskIntoConstraints = false
         profileImageView.translatesAutoresizingMaskIntoConstraints = false
         captionTextView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            profileImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            replyLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            replyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            
+            profileImageView.topAnchor.constraint(equalTo: replyLabel.bottomAnchor, constant: 16),
             profileImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             
-            captionTextView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            captionTextView.topAnchor.constraint(equalTo: replyLabel.bottomAnchor, constant: 16),
             captionTextView.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8),
             captionTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             captionTextView.heightAnchor.constraint(equalToConstant: (UIScreen.main.bounds.height - (UIScreen.main.bounds.height / 2)))

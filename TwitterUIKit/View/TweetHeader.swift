@@ -11,6 +11,10 @@ final class TweetHeader: UICollectionReusableView {
     // MARK: - Properties
     static let reuseIdentifier = "TweetHeader"
     
+    var tweet: Tweet? {
+        didSet { configure() }
+    }
+    
     private lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -82,6 +86,13 @@ final class TweetHeader: UICollectionReusableView {
         return divider
     }()
     
+    private let retweetsLikesStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 16
+        return stack
+    }()
+    
     private let statsView: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
@@ -89,27 +100,48 @@ final class TweetHeader: UICollectionReusableView {
         return stack
     }()
     
-    private let retweetsLabel: UILabel = {
-        let label = UILabel()
-        label.text = "0 Retweets"
-        label.font = UIFont.systemFont(ofSize: 14)
-        return label
-    }()
+    private let retweetsLabel = UILabel()
     
-    private let likesLabel: UILabel = {
-        let label = UILabel()
-        label.text = "0 Likes"
-        label.font = UIFont.systemFont(ofSize: 14)
-        return label
-    }()
+    private let likesLabel = UILabel()
     
     private let divider2: UIView = {
         let divider = UIView()
         divider.backgroundColor = .systemGroupedBackground
-
+        
         divider.translatesAutoresizingMaskIntoConstraints = false
         divider.heightAnchor.constraint(equalToConstant: 1.0).isActive = true
         return divider
+    }()
+    
+    private let actionStack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .horizontal
+        stack.spacing = 72
+        return stack
+    }()
+    
+    private lazy var commentButton: UIButton = {
+        let button = createButton(withImageName: "comment")
+        button.addTarget(self, action: #selector(handleCommentTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var retweetButton: UIButton = {
+        let button = createButton(withImageName: "retweet")
+        button.addTarget(self, action: #selector(handleRetweetTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var likeButton: UIButton = {
+        let button = createButton(withImageName: "like")
+        button.addTarget(self, action: #selector(handleLikeTapped), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var shareButton: UIButton = {
+        let button = createButton(withImageName: "share")
+        button.addTarget(self, action: #selector(handleShareTapped), for: .touchUpInside)
+        return button
     }()
     
     // MARK: - Lifecycle
@@ -132,20 +164,23 @@ final class TweetHeader: UICollectionReusableView {
         addSubview(captionLabel)
         addSubview(dateLabel)
         addSubview(statsView)
-        
-        let stack = UIStackView()
-        stack.axis = .horizontal
-        stack.spacing = 16
-        stack.addArrangedSubview(retweetsLabel)
-        stack.addArrangedSubview(likesLabel)
-        stack.addArrangedSubview(UIView())
-        
-        statsView.addArrangedSubview(divider1)
-        statsView.addArrangedSubview(stack)
-        statsView.addArrangedSubview(divider2)
+        addSubview(actionStack)
         
         userDetailsStack.addArrangedSubview(fullnameLabel)
         userDetailsStack.addArrangedSubview(usernameLabel)
+        
+        statsView.addArrangedSubview(divider1)
+        statsView.addArrangedSubview(retweetsLikesStack)
+        statsView.addArrangedSubview(divider2)
+        
+        retweetsLikesStack.addArrangedSubview(retweetsLabel)
+        retweetsLikesStack.addArrangedSubview(likesLabel)
+        retweetsLikesStack.addArrangedSubview(UIView())
+        
+        actionStack.addArrangedSubview(commentButton)
+        actionStack.addArrangedSubview(retweetButton)
+        actionStack.addArrangedSubview(likeButton)
+        actionStack.addArrangedSubview(shareButton)
     }
     
     private func setupLayout() {
@@ -155,6 +190,7 @@ final class TweetHeader: UICollectionReusableView {
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         optionsButton.translatesAutoresizingMaskIntoConstraints = false
         statsView.translatesAutoresizingMaskIntoConstraints = false
+        actionStack.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             profileImageView.topAnchor.constraint(equalTo: topAnchor, constant: 16),
@@ -170,13 +206,17 @@ final class TweetHeader: UICollectionReusableView {
             
             captionLabel.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 16),
             captionLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            captionLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             
             dateLabel.topAnchor.constraint(equalTo: captionLabel.bottomAnchor, constant: 16),
             dateLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             
             statsView.topAnchor.constraint(equalTo: dateLabel.bottomAnchor, constant: 16),
             statsView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
-            statsView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16)
+            statsView.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            
+            actionStack.topAnchor.constraint(equalTo: statsView.bottomAnchor, constant: 16),
+            actionStack.centerXAnchor.constraint(equalTo: centerXAnchor)
         ])
     }
     
@@ -188,5 +228,54 @@ final class TweetHeader: UICollectionReusableView {
     @objc
     private func showActionSheet() {
         
+    }
+    
+    @objc
+    private func handleCommentTapped() {
+        
+    }
+    
+    @objc
+    private func handleRetweetTapped() {
+        
+    }
+    
+    @objc
+    private func handleLikeTapped() {
+        
+    }
+    
+    @objc
+    private func handleShareTapped() {
+        
+    }
+    
+    // MARK: - Helpers
+    private func createButton(withImageName imageName: String) -> UIButton {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(named: imageName), for: .normal)
+        button.tintColor = .darkGray
+        
+        button.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            button.heightAnchor.constraint(equalToConstant: 20),
+            button.widthAnchor.constraint(equalToConstant: 20)
+        ])
+        
+        return button
+    }
+    
+    private func configure() {
+        guard let tweet = tweet else { return }
+        
+        let viewModel = TweetViewModel(tweet: tweet)
+        
+        profileImageView.sd_setImage(with: viewModel.profileImageUrl)
+        fullnameLabel.text = tweet.user?.fullname
+        usernameLabel.text = viewModel.usernameText
+        captionLabel.text = tweet.caption
+        dateLabel.text = viewModel.headerTimeStamp
+        retweetsLabel.attributedText = viewModel.retweetAttributedString
+        likesLabel.attributedText = viewModel.likesAttributedString
     }
 }

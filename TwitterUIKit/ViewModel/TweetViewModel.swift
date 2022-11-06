@@ -11,6 +11,11 @@ struct TweetViewModel {
     let tweet: Tweet
     let user: User?
     
+    init(tweet: Tweet) {
+        self.tweet = tweet
+        self.user = tweet.user
+    }
+    
     var profileImageUrl: URL? {
         return user?.profileImageUrl
     }
@@ -38,8 +43,41 @@ struct TweetViewModel {
         return formatter.string(from: tweet.timestamp, to: now) ?? ""
     }
     
-    init(tweet: Tweet) {
-        self.tweet = tweet
-        self.user = tweet.user
+    var usernameText: String {
+        return "@\(user?.username ?? "username")"
+    }
+    
+    var headerTimeStamp: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h:mm a · dd/MM/yyyy"
+        return formatter.string(from: tweet.timestamp)
+    }
+    
+    var retweetAttributedString: NSAttributedString? {
+        return attributedText(withValue: tweet.retweets, text: "Retweets")
+    }
+    
+    var likesAttributedString: NSAttributedString? {
+        return attributedText(withValue: tweet.likes, text: "Likes")
+    }
+    
+    fileprivate func attributedText(withValue value: Int, text: String) -> NSAttributedString {
+        let attributedTitle = NSMutableAttributedString(string: "\(value)",
+                                                        attributes: [.font: UIFont.boldSystemFont(ofSize: 14)])
+        
+        attributedTitle.append(NSAttributedString(string: " \(text)",
+                                                  attributes: [.font: UIFont.systemFont(ofSize: 14), .foregroundColor: UIColor.lightGray]))
+        
+        return attributedTitle
+    }
+    
+    func size(forWidth width: CGFloat) -> CGSize {
+        let measurementLabel = UILabel()
+        measurementLabel.text = tweet.caption
+        measurementLabel.numberOfLines = 0
+        measurementLabel.lineBreakMode = .byWordWrapping
+        measurementLabel.translatesAutoresizingMaskIntoConstraints = false
+        measurementLabel.widthAnchor.constraint(equalToConstant: width).isActive = true
+        return measurementLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize)
     }
 }
