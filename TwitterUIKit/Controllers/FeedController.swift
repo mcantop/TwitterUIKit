@@ -58,12 +58,23 @@ final class FeedController: UICollectionViewController {
         guard let user = user else { return }
         
         let profileImageView = UIImageView()
+        profileImageView.contentMode = .scaleAspectFill
         profileImageView.setDimensions(width: 32, height: 32)
         profileImageView.layer.cornerRadius = 32 / 2
         profileImageView.layer.masksToBounds = true
         profileImageView.sd_setImage(with: user.profileImageUrl)
         
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleUserOwnProfileTapped))
+        profileImageView.addGestureRecognizer(tap)
+        profileImageView.isUserInteractionEnabled = true
+        
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileImageView)
+    }
+    
+    @objc private func handleUserOwnProfileTapped() {
+        guard let user = user else { return }
+        let controller = ProfileController(user: user)
+        navigationController?.pushViewController(controller, animated: true)
     }
 }
 

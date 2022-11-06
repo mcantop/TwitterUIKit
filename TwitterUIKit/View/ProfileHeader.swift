@@ -9,6 +9,7 @@ import UIKit
 
 protocol ProfileHeaderDelegate: AnyObject {
     func handleDismiss()
+    func handleEditProfileFollow(_ header: ProfileHeader)
 }
 
 final class ProfileHeader: UICollectionReusableView {
@@ -48,7 +49,7 @@ final class ProfileHeader: UICollectionReusableView {
     
     private let profileImageView: UIImageView = {
         let imageView = UIImageView()
-        imageView.contentMode = .scaleToFill
+        imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.backgroundColor = .lightGray
         imageView.layer.borderColor = UIColor.white.cgColor
@@ -56,7 +57,7 @@ final class ProfileHeader: UICollectionReusableView {
         return imageView
     }()
     
-    private lazy var editProfileFollowButton: UIButton = {
+    lazy var editProfileFollowButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("Loading", for: .normal)
         button.layer.borderColor = UIColor.twitterBlue.cgColor
@@ -152,7 +153,7 @@ final class ProfileHeader: UICollectionReusableView {
     
     @objc
     private func handleEditProfileFollow() {
-        
+        delegate?.handleEditProfileFollow(self)
     }
     
     @objc
@@ -168,6 +169,7 @@ final class ProfileHeader: UICollectionReusableView {
     // MARK: - Helpers
     private func configure() {
         guard let user = user else { return }
+        
         let viewModel = ProfileHeaderViewModel(user: user)
         
         profileImageView.sd_setImage(with: user.profileImageUrl)
@@ -175,7 +177,7 @@ final class ProfileHeader: UICollectionReusableView {
         editProfileFollowButton.setTitle(viewModel.actionButtonTitle, for: .normal)
         
         fullnameLabel.text = user.fullname
-        usernameLabel.text = user.username
+        usernameLabel.text = viewModel.username
         
         followingLabel.attributedText = viewModel.followingString
         followersLabel.attributedText = viewModel.followersString

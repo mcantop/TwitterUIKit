@@ -17,23 +17,44 @@ struct TweetService {
         
         let data = ["uid": uid,
                     "timestamp": Timestamp(date: Date()),
-//                    "timestamp": Int(Date().timeIntervalSince1970),
+                    //                    "timestamp": Int(Date().timeIntervalSince1970),
                     "caption": caption,
                     "likes": 0,
                     "retweets": 0] as [String: Any]
         
+        let userTweetsRef = Firestore.firestore().collection("users")
+            .document(uid)
+            .collection("user-tweets")
         
-        Firestore.firestore().collection("tweets").document()
+        let tweetsRef = Firestore.firestore().collection("tweets").document()
+        
+        tweetsRef
             .setData(data) { error in
                 if let error = error {
                     completion(.failure(error))
                     return
                 }
                 
-                Firestore.firestore().collection("user-tweets").document()
-                    .setData(["tweetID": .d])
+                userTweetsRef.document(tweetsRef.documentID).setData([:]) { _ in
+                    completion(.success(()))
+                }
+            }
+    }
+    
+    func fetchTweet(forTweetId tweetId: String, completion: @escaping(Tweet) -> Void) {
+        Firestore.firestore().collection("tweets")
+            .document(tweetId)
+            .getDocument { snapshot, error in
+                if let _ = error {
+                    return
+                }
                 
-                completion(.success(()))
+                guard var tweet = try? snapshot?.data(as: Tweet.self) else { return }
+                
+                UserService.shared.fetchUser(withUid: tweet.uid) { user in
+                    tweet.user = user
+                    completion(tweet)
+                }
             }
     }
     
@@ -47,13 +68,35 @@ struct TweetService {
                 guard let documents = snapshot?.documents else { return }
                 
                 var tweets = [Tweet]()
-
+                
                 documents.forEach { document in
                     guard var tweet = try? document.data(as: Tweet.self) else { return }
                     UserService.shared.fetchUser(withUid: tweet.uid) { user in
                         tweet.user = user
                         tweets.append(tweet)
-                        completion(tweets)
+                        completion(tweets.sorted(by: { $0.timestamp > $1.timestamp }))
+                    }
+                }
+            }
+    }
+    
+    func fetchTweets(forUid uid: String, completion: @escaping([Tweet]) -> Void) {
+        Firestore.firestore().collection("users")
+            .document(uid)
+            .collection("user-tweets")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("DEBUG: Error while fetching tweets with error: \(error.localizedDescription).")
+                }
+                
+                guard let documents = snapshot?.documents else { return }
+                                
+                var tweets = [Tweet]()
+                
+                documents.forEach { document in
+                    fetchTweet(forTweetId: document.documentID) { tweet in
+                        tweets.append(tweet)
+                        completion(tweets.sorted(by: { $0.timestamp > $1.timestamp }))
                     }
                 }
             }

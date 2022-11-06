@@ -8,9 +8,9 @@
 import UIKit
 
 enum ProfileFilterOptions: Int, CaseIterable {
-case tweets
-case replies
-case likes
+    case tweets
+    case replies
+    case likes
     
     var description: String {
         switch self {
@@ -22,26 +22,34 @@ case likes
 }
 
 struct ProfileHeaderViewModel {
-    private let user: User
-    
-    var followingString: NSAttributedString? {
-        return attributedText(withValue: 2, text: "following")
-    }
-    
-    var followersString: NSAttributedString? {
-        return attributedText(withValue: 0, text: "followers")
-    }
-    
-    var actionButtonTitle: String {
-        if user.isCurrentUser {
-            return "Edit Profile"
-        } else {
-            return "Follow"
-        }
-    }
+    private var user: User
     
     init(user: User) {
         self.user = user
+    }
+    
+    var username: String {
+        return "@\(user.username)"
+    }
+    
+    var followingString: NSAttributedString? {
+        return attributedText(withValue: user.stats?.following ?? 0, text: "following")
+    }
+    
+    var followersString: NSAttributedString? {
+        return attributedText(withValue: user.stats?.followers ?? 0, text: "followers")
+    }
+    
+    var actionButtonTitle: String {
+        guard let isFollowed = user.isFollowed else { return "" }
+        
+        if user.isCurrentUser { return "Edit Profile" }
+        
+        if !isFollowed && !user.isCurrentUser { return "Follow" }
+        
+        if isFollowed { return "Unfollow" }
+        
+        return ""
     }
     
     fileprivate func attributedText(withValue value: Int, text: String) -> NSAttributedString {
