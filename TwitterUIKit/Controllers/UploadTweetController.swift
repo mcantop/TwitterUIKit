@@ -26,8 +26,23 @@ final class UploadTweetController: UIViewController {
         return button
     }()
     
+    private let stack: UIStackView = {
+        let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 12
+        return stack
+    }()
+    
+    private let imageTextViewStack: UIStackView = {
+        let imageTextViewStack = UIStackView()
+        imageTextViewStack.axis = .horizontal
+        imageTextViewStack.alignment = .leading
+        imageTextViewStack.spacing = 12
+        return imageTextViewStack
+    }()
+    
     private let profileImageView: UIImageView = {
-       let imageView = UIImageView()
+        let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.setDimensions(width: 48, height: 48)
@@ -40,6 +55,7 @@ final class UploadTweetController: UIViewController {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14)
         label.textColor = .lightGray
+        label.translatesAutoresizingMaskIntoConstraints = false
         label.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
         label.text = "replying to @future"
         return label
@@ -82,7 +98,7 @@ final class UploadTweetController: UIViewController {
     private func handleUploadTweet() {
         guard let caption = captionTextView.text else { return }
         
-        TweetService.shared.uploadTweet(caption: caption) { result in
+        TweetService.shared.uploadTweet(type: config, caption: caption) { result in
             switch result {
             case .failure(let error):
                 print("DEBUG: Failed to upload a tweet with error: \(error.localizedDescription).")
@@ -100,34 +116,30 @@ final class UploadTweetController: UIViewController {
         
         configureNavigationBar()
         
-        view.addSubview(replyLabel)
-        view.addSubview(profileImageView)
-        view.addSubview(captionTextView)
+        imageTextViewStack.addArrangedSubview(profileImageView)
+        imageTextViewStack.addArrangedSubview(captionTextView)
+        
+        stack.addArrangedSubview(replyLabel)
+        stack.addArrangedSubview(imageTextViewStack)
+        
+        view.addSubview(stack)
         
         profileImageView.sd_setImage(with: user.profileImageUrl)
         actionButton.setTitle(viewModel.actionButtonTitle, for: .normal)
         captionTextView.placeholderLabel.text = viewModel.placeholderText
+        
         replyLabel.isHidden = !viewModel.shouldshowReplyLabel
         guard let replyText = viewModel.replyText else { return }
         replyLabel.text = replyText
     }
     
     private func configureLayout() {
-        replyLabel.translatesAutoresizingMaskIntoConstraints = false
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        captionTextView.translatesAutoresizingMaskIntoConstraints = false
+        stack.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            replyLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
-            replyLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            
-            profileImageView.topAnchor.constraint(equalTo: replyLabel.bottomAnchor, constant: 16),
-            profileImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            
-            captionTextView.topAnchor.constraint(equalTo: replyLabel.bottomAnchor, constant: 16),
-            captionTextView.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8),
-            captionTextView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            captionTextView.heightAnchor.constraint(equalToConstant: (UIScreen.main.bounds.height - (UIScreen.main.bounds.height / 2)))
+            stack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            stack.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
         ])
     }
     

@@ -20,17 +20,20 @@ final class CaptionTextView: UITextView {
     // MARK: - Lifecycle
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
-        
-        addSubview(placeholderLabel)
-        
+                
         font = UIFont.systemFont(ofSize: 16)
         backgroundColor = .white
         isScrollEnabled = true
+        heightAnchor.constraint(equalToConstant: 300).isActive = true
+        
+        addSubview(placeholderLabel)
         
         NotificationCenter.default.addObserver(self, selector: #selector(handleTextInputChange), name: UITextView.textDidChangeNotification, object: nil)
         
         placeholderLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
+            topAnchor.constraint(equalTo: topAnchor),
+            leadingAnchor.constraint(equalTo: leadingAnchor),
             placeholderLabel.topAnchor.constraint(equalTo: topAnchor, constant: 8),
             placeholderLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 4)
         ])

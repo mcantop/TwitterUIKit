@@ -145,6 +145,7 @@ extension ProfileController: ProfileHeaderDelegate {
                     print("DEBUG: Successfully unfollowed a user.")
                     self.user.isFollowed = false
                     header.editProfileFollowButton.setTitle("Follow", for: .normal)
+                    self.checkFollowingFollowers()
                 }
             }
         } else {
@@ -156,11 +157,10 @@ extension ProfileController: ProfileHeaderDelegate {
                     print("DEBUG: Successfully followed a user.")
                     self.user.isFollowed = true
                     header.editProfileFollowButton.setTitle("Unfollow", for: .normal)
+                    self.checkFollowingFollowers()
                 }
             }
         }
-        
-        checkFollowingFollowers()
     }
     
     func handleDismiss() {

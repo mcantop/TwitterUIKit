@@ -10,10 +10,15 @@ import UIKit
 final class TweetController: UICollectionViewController {
     // MARK: - Properties
     private let tweet: Tweet
+    private var actionSheetLauncher: ActionSheetLauncher?
+    private var replies = [Tweet]() {
+        didSet { collectionView.reloadData() }
+    }
     
     // MARK: - Lifecycle
     init(tweet: Tweet) {
         self.tweet = tweet
+//        self.actionSheetLauncher = ActionSheetLauncher(user: tweet.user!)
         super.init(collectionViewLayout: UICollectionViewFlowLayout())
     }
     
@@ -23,27 +28,43 @@ final class TweetController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureCollectionView()
         
-        print("DEBUG: Tweet caption is: \(tweet.caption)")
+        configureCollectionView()
+        fetchReplies()
     }
     
+    // MARK: - Helpers
     private func configureCollectionView() {
         collectionView.backgroundColor = .white
         
         collectionView.register(TweetCell.self, forCellWithReuseIdentifier: TweetCell.reuseIdentifier)
         collectionView.register(TweetHeader.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: TweetHeader.reuseIdentifier)
     }
+    
+    private func showActionSheet(forUser user: User) {
+        actionSheetLauncher = ActionSheetLauncher(user: user)
+        actionSheetLauncher?.delegate = self
+        actionSheetLauncher?.show()
+    }
+    
+    // MARK: - API
+    private func fetchReplies() {
+        TweetService.shared.fetchReplies(forTweet: tweet) { replies in
+            self.replies = replies
+        }
+    }
 }
 
 // MARK: - UICollectionViewDataSource
 extension TweetController {
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 3
+        return replies.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TweetCell.reuseIdentifier, for: indexPath) as! TweetCell
+        
+        cell.tweet = replies[indexPath.row]
         
         return cell
     }
@@ -55,6 +76,7 @@ extension TweetController {
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: TweetHeader.reuseIdentifier, for: indexPath) as! TweetHeader
         
         header.tweet = tweet
+        header.delegate = self
         
         return header
     }
@@ -72,5 +94,57 @@ extension TweetController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         return CGSize(width: view.frame.width, height: 120)
+    }
+}
+
+extension TweetController: TweetHeaderDelegate {
+    func showActionSheet() {
+        guard let tweetUser = tweet.user else { return }
+        guard let tweetUserId = tweetUser.id else { return }
+        
+        if tweetUser.isCurrentUser {
+            showActionSheet(forUser: tweetUser)
+        } else {
+            UserService.shared.checkIfUserIsFollowed(uid: tweetUserId) { isFollowed in
+                var user = self.tweet.user
+                user?.isFollowed = isFollowed
+                
+                if let user = user {
+                    self.showActionSheet(forUser: user)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - ActionSheetLauncherDelegate
+extension TweetController: ActionSheetLauncherDelegate {
+    func didSelectOption(option: ActionSheetOptions) {
+        switch option {
+        case .follow(let user):
+            guard let uid = user.id else { return }
+            UserService.shared.followUser(uid: uid) { result in
+                switch result {
+                case .success:
+                    print("DEBUG: Now following user: \(user.username)")
+                case .failure(let error):
+                    print("DEBUG: An error occured while trying to follow a user with error: \(error.localizedDescription)")
+                }
+            }
+        case .unfollow(let user):
+            guard let uid = user.id else { return }
+            UserService.shared.unfollowUser(uid: uid) { result in
+                switch result {
+                case .success:
+                    print("DEBUG: Now unfollowing user: \(user.username)")
+                case .failure(let error):
+                    print("DEBUG: An error occured while trying to unfollow a user with error: \(error.localizedDescription)")
+                }
+            }
+        case .report:
+            print("DEBUG: Report tweet..")
+        case .delete:
+            print("DEBUG: Delete tweet..")
+        }
     }
 }

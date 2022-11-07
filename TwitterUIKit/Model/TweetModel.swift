@@ -17,4 +17,5 @@ struct Tweet: Identifiable, Codable {
     let likes: Int
     let retweets: Int
     var user: User?
+    var isLiked: Bool? = false
 }

@@ -12,7 +12,7 @@ import FirebaseAuth
 struct TweetService {
     static let shared = TweetService()
     
-    func uploadTweet(caption: String, completion: @escaping(Result<Void, Error>) -> Void) {
+    func uploadTweet(type: UploadTweetConfiguration, caption: String, completion: @escaping(Result<Void, Error>) -> Void) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
         let data = ["uid": uid,
@@ -26,19 +26,46 @@ struct TweetService {
             .document(uid)
             .collection("user-tweets")
         
-        let tweetsRef = Firestore.firestore().collection("tweets").document()
+        let tweetsRef = Firestore.firestore().collection("tweets")
+            .document()
         
-        tweetsRef
-            .setData(data) { error in
-                if let error = error {
-                    completion(.failure(error))
-                    return
+        switch type {
+        case .tweet:
+            tweetsRef
+                .setData(data) { error in
+                    if let error = error {
+                        completion(.failure(error))
+                        return
+                    }
+                    
+                    userTweetsRef.document(tweetsRef.documentID).setData([:]) { _ in
+                        completion(.success(()))
+                    }
                 }
+            
+        case .reply(let tweet):
+            guard let tweetId = tweet.id else { return }
+            
+            let tweetRepliesRef = Firestore.firestore().collection("tweets")
+                .document(tweetId)
+                .collection("tweet-replies")
                 
-                userTweetsRef.document(tweetsRef.documentID).setData([:]) { _ in
+            print(tweetId)
+            
+            tweetRepliesRef
+                .document()
+                .setData(data) { error in
+                    if let error = error {
+                        completion(.failure(error))
+                        return
+                    }
+
+                    print("DEBUG: REPLIED WITH SUCCESS")
+
                     completion(.success(()))
                 }
-            }
+            
+        }
     }
     
     func fetchTweet(forTweetId tweetId: String, completion: @escaping(Tweet) -> Void) {
@@ -95,6 +122,32 @@ struct TweetService {
                 
                 documents.forEach { document in
                     fetchTweet(forTweetId: document.documentID) { tweet in
+                        tweets.append(tweet)
+                        completion(tweets.sorted(by: { $0.timestamp > $1.timestamp }))
+                    }
+                }
+            }
+    }
+    
+    func fetchReplies(forTweet tweet: Tweet, completion: @escaping([Tweet]) -> Void) {
+        guard let tweetId = tweet.id else { return }
+        
+        Firestore.firestore().collection("tweets")
+            .document(tweetId)
+            .collection("tweet-replies")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("DEBUG: Error while fetching tweet replies with error: \(error.localizedDescription).")
+                }
+                
+                guard let documents = snapshot?.documents else { return }
+                
+                var tweets = [Tweet]()
+                
+                documents.forEach { document in
+                    guard var tweet = try? document.data(as: Tweet.self) else { return }
+                    UserService.shared.fetchUser(withUid: tweet.uid) { user in
+                        tweet.user = user
                         tweets.append(tweet)
                         completion(tweets.sorted(by: { $0.timestamp > $1.timestamp }))
                     }
