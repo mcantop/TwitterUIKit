@@ -11,11 +11,13 @@ import FirebaseFirestore
 
 struct Tweet: Identifiable, Codable {
     @DocumentID var id: String?
+    
     let uid: String
     let timestamp: Date
     let caption: String
-    let likes: Int
-    let retweets: Int
+    
+    var likes: Int
+    var retweets: Int
     var user: User?
     var isLiked: Bool? = false
 }

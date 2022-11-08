@@ -154,4 +154,62 @@ struct TweetService {
                 }
             }
     }
+    
+    func checkIfUserLikedTweet(_ tweet: Tweet, completion: @escaping(Bool) -> Void) {
+        guard let tweetId = tweet.id else { return }
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        let tweetRef = Firestore.firestore().collection("tweets").document(tweetId)
+
+        tweetRef
+            .collection("tweet-likes")
+            .document(uid)
+            .getDocument { snapshot, _ in
+                guard let snapshot = snapshot else { return }
+                completion(snapshot.exists)
+            }
+    }
+    
+    func likeTweet(_ tweet: Tweet, completion: @escaping(Result<Void, Error>) -> Void) {
+        guard let tweetId = tweet.id else { return }
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+                
+        let tweetRef = Firestore.firestore().collection("tweets").document(tweetId)
+        let userRef = Firestore.firestore().collection("users").document(uid)
+        
+        guard let isLiked = tweet.isLiked else { return }
+        let likes = isLiked ? tweet.likes - 1 : tweet.likes + 1
+                
+        tweetRef
+            .updateData(["likes": likes])
+        
+        if isLiked {
+            tweetRef
+                .collection("tweet-likes")
+                .document(uid)
+                .delete()
+            
+            userRef
+                .collection("user-likes")
+                .document(tweetId)
+                .delete()
+            
+            completion(.success(()))
+        } else {
+            tweetRef
+                .collection("tweet-likes")
+                .document(uid)
+                .setData([:]) { _ in
+                    
+                    userRef
+                        .collection("user-likes")
+                        .document(tweetId)
+                        .setData([:]) { _ in
+                            
+                            completion(.success(()))
+                        }
+                }
+
+        }
+    }
 }

@@ -174,12 +174,14 @@ final class TweetCell: UICollectionViewCell {
     }
     
     // MARK: - Helpers
-    func configure() {
+    private func configure() {
         guard let tweet = tweet else { return }
         let viewModel = TweetViewModel(tweet: tweet)
         
         profileImageView.sd_setImage(with: viewModel.profileImageUrl)
         infoLabel.attributedText = viewModel.userInfoText
         captionLabel.text = tweet.caption
+        likeButton.setImage(viewModel.likeButtonImage, for: .normal)
+        likeButton.tintColor = viewModel.likeButtonTintColor
     }
 }

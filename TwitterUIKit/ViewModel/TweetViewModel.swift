@@ -61,6 +61,17 @@ struct TweetViewModel {
         return attributedText(withValue: tweet.likes, text: "Likes")
     }
     
+    var likeButtonTintColor: UIColor {
+        guard let isLiked = tweet.isLiked else { return .purple }
+        return isLiked ? .red : .darkGray
+    }
+    
+    var likeButtonImage: UIImage {
+        guard let isLiked = tweet.isLiked else { return UIImage(named: "like")! }
+        let imageName = isLiked ? "like_filled" : "like"
+        return UIImage(named: imageName)!
+    }
+    
     fileprivate func attributedText(withValue value: Int, text: String) -> NSAttributedString {
         let attributedTitle = NSMutableAttributedString(string: "\(value)",
                                                         attributes: [.font: UIFont.boldSystemFont(ofSize: 14)])

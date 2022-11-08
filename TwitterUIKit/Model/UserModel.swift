@@ -10,10 +10,12 @@ import FirebaseAuth
 
 struct User: Identifiable, Codable {
     @DocumentID var id: String?
+    
     let email: String
     let username: String
     let fullname: String
     let profileImageUrl: URL
+    
     var isFollowed: Bool? = false
     var stats: UserRelationStats?
     
