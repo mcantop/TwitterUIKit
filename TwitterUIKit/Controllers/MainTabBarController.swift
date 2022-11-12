@@ -20,6 +20,8 @@ final class MainTabBarController: UITabBarController {
         }
     }
     
+    private let feed = FeedController(collectionViewLayout: UICollectionViewFlowLayout())
+    
     lazy var actionButton: UIButton = {
         let button = UIButton(type: .system)
         button.tintColor = .white
@@ -55,7 +57,7 @@ final class MainTabBarController: UITabBarController {
         }
     }
     
-    func fetchUser() {
+    private func fetchUser() {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
         UserService.shared.fetchUser(withUid: uid) { user in
@@ -71,6 +73,17 @@ final class MainTabBarController: UITabBarController {
         }
     }
     
+    // MARK: - Selectors
+    @objc
+    private func actionButtonTapped() {
+        guard let user = user else { return }
+        let controller = UploadTweetController(user: user, config: .tweet)
+        controller.delegate = feed
+        let nav = UINavigationController(rootViewController: controller)
+        nav.modalPresentationStyle = .fullScreen
+        present(nav, animated: true)
+    }
+    
     // MARK: - Helpers
     private func configureUI() {
         view.addSubview(actionButton)
@@ -83,21 +96,9 @@ final class MainTabBarController: UITabBarController {
             actionButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -64),
             actionButton.rightAnchor.constraint(equalTo: view.rightAnchor, constant: -16),
         ])
-//        actionButton.anchor(bottom: view.safeAreaLayoutGuide.bottomAnchor, right: view.rightAnchor, paddingBottom: 64, paddingRight: 16, width: buttonSize, height: buttonSize)
-    }
-    
-    // MARK: - Selectors
-    @objc
-    private func actionButtonTapped() {
-        guard let user = user else { return }
-        let controller = UploadTweetController(user: user, config: .tweet)
-        let nav = UINavigationController(rootViewController: controller)
-        nav.modalPresentationStyle = .fullScreen
-        present(nav, animated: true)
     }
     
     private func configureViewControllers() {
-        let feed = FeedController(collectionViewLayout: UICollectionViewFlowLayout())
         let feedNavigation = templateNavigationController(image: UIImage.feed, rootViewController: feed)
 
         let explore = ExploreController()

@@ -7,12 +7,18 @@
 
 import UIKit
 
+protocol UploadTweetControllerDelegate: AnyObject {
+    func reloadTableAfterTweetUpload()
+}
+
 final class UploadTweetController: UIViewController {
     // MARK: - Properties
     private let user: User
     private let config: UploadTweetConfiguration
     private lazy var viewModel = UploadTweetViewModel(config: config)
     
+    weak var delegate: UploadTweetControllerDelegate?
+
     private lazy var actionButton: UIButton = {
         let button = UIButton(type: .system)
         button.backgroundColor = .twitterBlue
@@ -103,12 +109,17 @@ final class UploadTweetController: UIViewController {
             case .failure(let error):
                 print("DEBUG: Failed to upload a tweet with error: \(error.localizedDescription).")
             case .success:
-                self.dismiss(animated: true)
+                self.delegate?.reloadTableAfterTweetUpload()
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    if case .reply(let tweet) = self.config {
+                        NotificationService.shared.uploadNotification(type: .reply, tweet: tweet)
+                    }
+                    
+                    self.dismiss(animated: true)
+                }
             }
         }
     }
-    
-    // MARK: - API
     
     // MARK: - Helpers
     private func configureUI() {
@@ -148,3 +159,5 @@ final class UploadTweetController: UIViewController {
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: actionButton)
     }
 }
+
+

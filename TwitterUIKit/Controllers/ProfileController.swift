@@ -40,16 +40,6 @@ final class ProfileController: UICollectionViewController {
         navigationController?.navigationBar.isHidden = true
     }
     
-    // MARK: - Selectors
-    private func configureCollectionView() {
-        collectionView.backgroundColor = .white
-        collectionView.contentInsetAdjustmentBehavior = .never
-        collectionView.register(TweetCell.self, forCellWithReuseIdentifier: TweetCell.reuseIdentifier)
-        collectionView.register(ProfileHeader.self,
-                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
-                                withReuseIdentifier: ProfileHeader.headerIdentifier)
-    }
-    
     // MARK: - API
     private func fetchUserTweets() {
         guard let uid = user.id else { return }
@@ -84,6 +74,16 @@ final class ProfileController: UICollectionViewController {
             self.collectionView.reloadData()
         }
     }
+    
+    // MARK: - Selectors
+    private func configureCollectionView() {
+        collectionView.backgroundColor = .white
+        collectionView.contentInsetAdjustmentBehavior = .never
+        collectionView.register(TweetCell.self, forCellWithReuseIdentifier: TweetCell.reuseIdentifier)
+        collectionView.register(ProfileHeader.self,
+                                forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
+                                withReuseIdentifier: ProfileHeader.headerIdentifier)
+    }
 }
 
 // MARK: - UICollectionViewDataSource 
@@ -101,7 +101,7 @@ extension ProfileController {
     }
 }
 
-// MARK: UICollectionViewDelegate
+// MARK: - UICollectionViewDelegate
 extension ProfileController {
     override func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         let header = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: ProfileHeader.headerIdentifier, for: indexPath) as! ProfileHeader
@@ -126,6 +126,7 @@ extension ProfileController: UICollectionViewDelegateFlowLayout {
     }
 }
 
+// MARK: - ProfileHeaderDelegate
 extension ProfileController: ProfileHeaderDelegate {
     func handleEditProfileFollow(_ header: ProfileHeader) {
         guard let uid = user.id else { return }
@@ -157,10 +158,12 @@ extension ProfileController: ProfileHeaderDelegate {
                     print("DEBUG: Successfully followed a user.")
                     self.user.isFollowed = true
                     header.editProfileFollowButton.setTitle("Unfollow", for: .normal)
+                    NotificationService.shared.uploadNotification(type: .follow, user: self.user)
                     self.checkFollowingFollowers()
                 }
             }
         }
+        
     }
     
     func handleDismiss() {

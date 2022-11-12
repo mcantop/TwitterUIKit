@@ -3,4 +3,54 @@
    uuid = "C3262FF6-B87E-44E3-9998-EB8737BE7719"
    type = "0"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "CF8435AD-4700-4967-BA00-62CB319841F7"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "TwitterUIKit/Service/NotificationService.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "52"
+            endingLineNumber = "52"
+            landmarkName = "fetchNotifications(completion:)"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "CF8435AD-4700-4967-BA00-62CB319841F7 - 38f2c70e935c2425"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (Swift.Optional&lt;__C.FIRQuerySnapshot&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in TwitterUIKit.NotificationService.fetchNotifications(completion: (Swift.Array&lt;TwitterUIKit.Notification&gt;) -&gt; ()) -&gt; ()"
+                  moduleName = "TwitterUIKit"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/maciej/Documents/iOS%20Development/UIKit%20Projects/TwitterUIKit/TwitterUIKit/Service/NotificationService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "52"
+                  endingLineNumber = "52"
+                  offsetFromSymbolStart = "276">
+               </Location>
+               <Location
+                  uuid = "CF8435AD-4700-4967-BA00-62CB319841F7 - 8714d8c670b476dd"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 (__C.FIRQueryDocumentSnapshot) -&gt; () in closure #1 (Swift.Optional&lt;__C.FIRQuerySnapshot&gt;, Swift.Optional&lt;Swift.Error&gt;) -&gt; () in TwitterUIKit.NotificationService.fetchNotifications(completion: (Swift.Array&lt;TwitterUIKit.Notification&gt;) -&gt; ()) -&gt; ()"
+                  moduleName = "TwitterUIKit"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/maciej/Documents/iOS%20Development/UIKit%20Projects/TwitterUIKit/TwitterUIKit/Service/NotificationService.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "45"
+                  endingLineNumber = "45"
+                  offsetFromSymbolStart = "200">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

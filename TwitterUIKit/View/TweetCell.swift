@@ -124,30 +124,6 @@ final class TweetCell: UICollectionViewCell {
     }
     
     // MARK: - Selectors
-    private func setupLayout() {
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        underlineView.translatesAutoresizingMaskIntoConstraints = false
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        actionStack.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            profileImageView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            profileImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            
-            stack.topAnchor.constraint(equalTo: profileImageView.topAnchor),
-            stack.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            
-            actionStack.centerXAnchor.constraint(equalTo: centerXAnchor),
-            actionStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
-            
-            underlineView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            underlineView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            underlineView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            underlineView.heightAnchor.constraint(equalToConstant: 1)
-        ])
-    }
-    
     @objc
     private func handleProfileImageTapped() {
         delegate?.handleProfileImageTapped(self)
@@ -174,6 +150,30 @@ final class TweetCell: UICollectionViewCell {
     }
     
     // MARK: - Helpers
+    private func setupLayout() {
+        profileImageView.translatesAutoresizingMaskIntoConstraints = false
+        underlineView.translatesAutoresizingMaskIntoConstraints = false
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        actionStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            profileImageView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            profileImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            
+            stack.topAnchor.constraint(equalTo: profileImageView.topAnchor),
+            stack.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            
+            actionStack.centerXAnchor.constraint(equalTo: centerXAnchor),
+            actionStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
+            
+            underlineView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            underlineView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            underlineView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            underlineView.heightAnchor.constraint(equalToConstant: 1)
+        ])
+    }
+    
     private func configure() {
         guard let tweet = tweet else { return }
         let viewModel = TweetViewModel(tweet: tweet)

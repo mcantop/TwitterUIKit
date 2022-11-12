@@ -18,6 +18,8 @@ final class FeedController: UICollectionViewController {
         didSet { collectionView.reloadData() }
     }
     
+    private let refreshControl = UIRefreshControl()
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -34,7 +36,10 @@ final class FeedController: UICollectionViewController {
     
     // MARK: - API
     private func fetchTweets() {
+        refreshControl.beginRefreshing()
+        
         TweetService.shared.fetchTweets { tweets in
+            self.refreshControl.endRefreshing()
             self.tweets = tweets
             self.checkIfUserLikedTweets(tweets)
         }
@@ -48,6 +53,19 @@ final class FeedController: UICollectionViewController {
         }
     }
     
+    // MARK: - Selectors
+    @objc
+    private func handleUserOwnProfileTapped() {
+        guard let user = user else { return }
+        let controller = ProfileController(user: user)
+        navigationController?.pushViewController(controller, animated: true)
+    }
+    
+    @objc
+    private func refreshTweets() {
+        fetchTweets()
+    }
+    
     // MARK: - Helpers
     private func configureUI() {
         view.backgroundColor = .white
@@ -59,6 +77,9 @@ final class FeedController: UICollectionViewController {
         
         collectionView.register(TweetCell.self, forCellWithReuseIdentifier: TweetCell.reuseIdentifier)
         collectionView.backgroundColor = .white
+        
+        collectionView.refreshControl = refreshControl
+        refreshControl.addTarget(self, action: #selector(refreshTweets), for: .valueChanged)
         
         navigationItem.titleView = imageView
     }
@@ -78,12 +99,6 @@ final class FeedController: UICollectionViewController {
         profileImageView.isUserInteractionEnabled = true
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(customView: profileImageView)
-    }
-    
-    @objc private func handleUserOwnProfileTapped() {
-        guard let user = user else { return }
-        let controller = ProfileController(user: user)
-        navigationController?.pushViewController(controller, animated: true)
     }
 }
 
@@ -119,6 +134,7 @@ extension FeedController: UICollectionViewDelegateFlowLayout {
     }
 }
 
+// MARK: - TweetCellDelegate
 extension FeedController: TweetCellDelegate {
     func handleLikeTapped(_ cell: TweetCell) {
         guard let tweet = cell.tweet else { return }
@@ -133,6 +149,9 @@ extension FeedController: TweetCellDelegate {
                     let likes = isLiked ? tweet.likes - 1 : tweet.likes + 1
                     cell.tweet?.likes = likes
                     self.checkIfUserLikedTweets(self.tweets)
+                    
+                    guard !isLiked else { return }
+                    NotificationService.shared.uploadNotification(type: .like, tweet: tweet)
                 }
             }
     }
@@ -150,5 +169,11 @@ extension FeedController: TweetCellDelegate {
         guard let user = cell.tweet?.user else { return }
         let controller = ProfileController(user: user)
         navigationController?.pushViewController(controller, animated: true)
+    }
+}
+
+extension FeedController: UploadTweetControllerDelegate {
+    func reloadTableAfterTweetUpload() {
+        fetchTweets()
     }
 }

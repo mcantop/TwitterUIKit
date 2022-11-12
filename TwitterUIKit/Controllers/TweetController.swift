@@ -97,6 +97,7 @@ extension TweetController: UICollectionViewDelegateFlowLayout {
     }
 }
 
+// MARK: - TweetHeaderDelegate
 extension TweetController: TweetHeaderDelegate {
     func showActionSheet() {
         guard let tweetUser = tweet.user else { return }
@@ -144,7 +145,11 @@ extension TweetController: ActionSheetLauncherDelegate {
         case .report:
             print("DEBUG: Report tweet..")
         case .delete:
-            print("DEBUG: Delete tweet..")
+            print("DEBUG: delete tweet 1")
+            TweetService.shared.deleteTweet(tweet) {
+                print("DEBUG: Tweet with caption: \(self.tweet.caption) has been deleted.")
+                self.navigationController?.popViewController(animated: true)
+            }
         }
     }
 }

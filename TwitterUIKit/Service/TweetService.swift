@@ -9,6 +9,9 @@ import FirebaseFirestore
 import FirebaseCore
 import FirebaseAuth
 
+private let usersRef = Firestore.firestore().collection("users")
+private let tweetsRef = Firestore.firestore().collection("tweets")
+
 struct TweetService {
     static let shared = TweetService()
     
@@ -17,40 +20,31 @@ struct TweetService {
         
         let data = ["uid": uid,
                     "timestamp": Timestamp(date: Date()),
-                    //                    "timestamp": Int(Date().timeIntervalSince1970),
+                    // "timestamp": Int(Date().timeIntervalSince1970),
                     "caption": caption,
                     "likes": 0,
                     "retweets": 0] as [String: Any]
         
-        let userTweetsRef = Firestore.firestore().collection("users")
-            .document(uid)
-            .collection("user-tweets")
-        
-        let tweetsRef = Firestore.firestore().collection("tweets")
-            .document()
+        let userTweetsRef = usersRef.document(uid).collection("user-tweets")
+        let tweetsDocRef = tweetsRef.document()
         
         switch type {
         case .tweet:
-            tweetsRef
+            tweetsDocRef
                 .setData(data) { error in
                     if let error = error {
                         completion(.failure(error))
                         return
                     }
                     
-                    userTweetsRef.document(tweetsRef.documentID).setData([:]) { _ in
+                    userTweetsRef.document(tweetsDocRef.documentID).setData([:]) { _ in
                         completion(.success(()))
                     }
                 }
-            
         case .reply(let tweet):
             guard let tweetId = tweet.id else { return }
             
-            let tweetRepliesRef = Firestore.firestore().collection("tweets")
-                .document(tweetId)
-                .collection("tweet-replies")
-                
-            print(tweetId)
+            let tweetRepliesRef = tweetsRef.document(tweetId).collection("tweet-replies")
             
             tweetRepliesRef
                 .document()
@@ -59,9 +53,8 @@ struct TweetService {
                         completion(.failure(error))
                         return
                     }
-
+                    
                     print("DEBUG: REPLIED WITH SUCCESS")
-
                     completion(.success(()))
                 }
             
@@ -69,8 +62,7 @@ struct TweetService {
     }
     
     func fetchTweet(forTweetId tweetId: String, completion: @escaping(Tweet) -> Void) {
-        Firestore.firestore().collection("tweets")
-            .document(tweetId)
+        tweetsRef.document(tweetId)
             .getDocument { snapshot, error in
                 if let _ = error {
                     return
@@ -86,8 +78,7 @@ struct TweetService {
     }
     
     func fetchTweets(completion: @escaping([Tweet]) -> Void) {
-        Firestore.firestore().collection("tweets")
-            .order(by: "timestamp", descending: true)
+        tweetsRef.order(by: "timestamp", descending: true)
             .getDocuments { snapshot, error in
                 if let error = error {
                     print("DEBUG: Error while fetching tweets with error: \(error.localizedDescription).")
@@ -108,16 +99,14 @@ struct TweetService {
     }
     
     func fetchTweets(forUid uid: String, completion: @escaping([Tweet]) -> Void) {
-        Firestore.firestore().collection("users")
-            .document(uid)
-            .collection("user-tweets")
+        usersRef.document(uid).collection("user-tweets")
             .getDocuments { snapshot, error in
                 if let error = error {
                     print("DEBUG: Error while fetching tweets with error: \(error.localizedDescription).")
                 }
                 
                 guard let documents = snapshot?.documents else { return }
-                                
+                
                 var tweets = [Tweet]()
                 
                 documents.forEach { document in
@@ -132,9 +121,7 @@ struct TweetService {
     func fetchReplies(forTweet tweet: Tweet, completion: @escaping([Tweet]) -> Void) {
         guard let tweetId = tweet.id else { return }
         
-        Firestore.firestore().collection("tweets")
-            .document(tweetId)
-            .collection("tweet-replies")
+        tweetsRef.document(tweetId).collection("tweet-replies")
             .getDocuments { snapshot, error in
                 if let error = error {
                     print("DEBUG: Error while fetching tweet replies with error: \(error.localizedDescription).")
@@ -159,11 +146,9 @@ struct TweetService {
         guard let tweetId = tweet.id else { return }
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
-        let tweetRef = Firestore.firestore().collection("tweets").document(tweetId)
-
-        tweetRef
-            .collection("tweet-likes")
-            .document(uid)
+        let tweetRef = tweetsRef.document(tweetId)
+        
+        tweetRef.collection("tweet-likes").document(uid)
             .getDocument { snapshot, _ in
                 guard let snapshot = snapshot else { return }
                 completion(snapshot.exists)
@@ -173,43 +158,48 @@ struct TweetService {
     func likeTweet(_ tweet: Tweet, completion: @escaping(Result<Void, Error>) -> Void) {
         guard let tweetId = tweet.id else { return }
         guard let uid = Auth.auth().currentUser?.uid else { return }
-                
-        let tweetRef = Firestore.firestore().collection("tweets").document(tweetId)
-        let userRef = Firestore.firestore().collection("users").document(uid)
+        
+        let tweetDocRef = tweetsRef.document(tweetId)
+        let userDocRef = usersRef.document(uid)
         
         guard let isLiked = tweet.isLiked else { return }
         let likes = isLiked ? tweet.likes - 1 : tweet.likes + 1
-                
-        tweetRef
+        
+        tweetDocRef
             .updateData(["likes": likes])
         
         if isLiked {
-            tweetRef
-                .collection("tweet-likes")
-                .document(uid)
+            tweetDocRef.collection("tweet-likes").document(uid)
                 .delete()
             
-            userRef
-                .collection("user-likes")
-                .document(tweetId)
+            userDocRef.collection("user-likes").document(tweetId)
                 .delete()
             
             completion(.success(()))
         } else {
-            tweetRef
-                .collection("tweet-likes")
-                .document(uid)
+            tweetDocRef.collection("tweet-likes").document(uid)
                 .setData([:]) { _ in
                     
-                    userRef
-                        .collection("user-likes")
-                        .document(tweetId)
+                    userDocRef.collection("user-likes").document(tweetId)
                         .setData([:]) { _ in
                             
                             completion(.success(()))
                         }
                 }
-
+            
         }
+    }
+    
+    func deleteTweet(_ tweet: Tweet, completion: @escaping() -> Void) {
+        guard let tweetId = tweet.id else { return }
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        tweetsRef.document(tweetId)
+            .delete()
+        
+        usersRef.document(uid).collection("user-tweets").document(tweetId)
+            .delete()
+        
+        completion()
     }
 }

@@ -39,6 +39,13 @@ final class ExploreController: UITableViewController {
         navigationController?.navigationBar.isHidden = false
     }
     
+    // MARK: - API
+    private func fetchUsers() {
+        UserService.shared.fetchUsers { users in
+            self.users = users
+        }
+    }
+    
     // MARK: - Helpers
     private func configureUI() {
         view.backgroundColor = .white
@@ -59,12 +66,6 @@ final class ExploreController: UITableViewController {
         searchController.searchBar.placeholder = "Search for a user"
         navigationItem.searchController = searchController
         definesPresentationContext = false
-    }
-    
-    private func fetchUsers() {
-        UserService.shared.fetchUsers { users in
-            self.users = users
-        }
     }
 }
 
