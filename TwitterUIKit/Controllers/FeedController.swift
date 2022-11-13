@@ -17,15 +17,14 @@ final class FeedController: UICollectionViewController {
     private var tweets = [Tweet]() {
         didSet { collectionView.reloadData() }
     }
-    
-    private let refreshControl = UIRefreshControl()
-    
+        
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
         configureUI()
-        fetchTweets()
+//        fetchTweets()
+        fetchUserFollowedTweets()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -35,11 +34,21 @@ final class FeedController: UICollectionViewController {
     }
     
     // MARK: - API
+    private func fetchUserFollowedTweets() {
+        collectionView.refreshControl?.beginRefreshing()
+        
+        TweetService.shared.fetchUserFeed { tweets in
+            self.tweets = tweets
+            self.checkIfUserLikedTweets(self.tweets)
+            self.collectionView.refreshControl?.endRefreshing()
+        }
+    }
+    
     private func fetchTweets() {
-        refreshControl.beginRefreshing()
+        collectionView.refreshControl?.beginRefreshing()
         
         TweetService.shared.fetchTweets { tweets in
-            self.refreshControl.endRefreshing()
+            self.collectionView.refreshControl?.endRefreshing()
             self.tweets = tweets
             self.checkIfUserLikedTweets(tweets)
         }
@@ -63,7 +72,7 @@ final class FeedController: UICollectionViewController {
     
     @objc
     private func refreshTweets() {
-        fetchTweets()
+        fetchUserFollowedTweets()
     }
     
     // MARK: - Helpers
@@ -78,6 +87,7 @@ final class FeedController: UICollectionViewController {
         collectionView.register(TweetCell.self, forCellWithReuseIdentifier: TweetCell.reuseIdentifier)
         collectionView.backgroundColor = .white
         
+        let refreshControl = UIRefreshControl()
         collectionView.refreshControl = refreshControl
         refreshControl.addTarget(self, action: #selector(refreshTweets), for: .valueChanged)
         

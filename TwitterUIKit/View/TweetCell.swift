@@ -39,6 +39,8 @@ final class TweetCell: UICollectionViewCell {
     }()
     
     private let stack = UIStackView()
+    private let imageCaptionStack = UIStackView()
+    private let captionStack = UIStackView()
     private let infoLabel = UILabel()
     private let captionLabel: UILabel = {
         let label = UILabel()
@@ -99,15 +101,31 @@ final class TweetCell: UICollectionViewCell {
     // MARK: - Lifecycle
     override init(frame: CGRect) {
         super.init(frame: frame)
+                
+        addSubview(stack)
+        addSubview(actionStack)
+        addSubview(underlineView)
         
         stack.axis = .vertical
         stack.distribution = .fillProportionally
-        stack.spacing = 4
-        stack.addArrangedSubview(infoLabel)
-        stack.addArrangedSubview(captionLabel)
+        stack.spacing = 8
+        stack.addArrangedSubview(replyLabel)
+        stack.addArrangedSubview(imageCaptionStack)
+        
+        captionStack.axis = .vertical
+        captionStack.distribution = .fillProportionally
+        captionStack.spacing = 4
+        captionStack.addArrangedSubview(infoLabel)
+        captionStack.addArrangedSubview(captionLabel)
+        
+        imageCaptionStack.axis = .horizontal
+        imageCaptionStack.alignment = .leading
+        imageCaptionStack.distribution = .fillProportionally
+        imageCaptionStack.spacing = 12
+        imageCaptionStack.addArrangedSubview(profileImageView)
+        imageCaptionStack.addArrangedSubview(captionStack)
         
         infoLabel.font = UIFont.systemFont(ofSize: 14)
-        infoLabel.text = "KING PLUTO @future"
         
         underlineView.backgroundColor = .systemGroupedBackground
         
@@ -118,11 +136,6 @@ final class TweetCell: UICollectionViewCell {
         actionStack.addArrangedSubview(retweetButton)
         actionStack.addArrangedSubview(likeButton)
         actionStack.addArrangedSubview(shareButton)
-        
-        addSubview(profileImageView)
-        addSubview(stack)
-        addSubview(actionStack)
-        addSubview(underlineView)
         
         setupLayout()
     }
@@ -159,18 +172,14 @@ final class TweetCell: UICollectionViewCell {
     
     // MARK: - Helpers
     private func setupLayout() {
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        underlineView.translatesAutoresizingMaskIntoConstraints = false
         stack.translatesAutoresizingMaskIntoConstraints = false
         actionStack.translatesAutoresizingMaskIntoConstraints = false
+        underlineView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            profileImageView.topAnchor.constraint(equalTo: topAnchor, constant: 8),
-            profileImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
-            
-            stack.topAnchor.constraint(equalTo: profileImageView.topAnchor),
-            stack.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8),
-            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
+            stack.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 8),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -8),
             
             actionStack.centerXAnchor.constraint(equalTo: centerXAnchor),
             actionStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -8),
@@ -191,5 +200,7 @@ final class TweetCell: UICollectionViewCell {
         captionLabel.text = tweet.caption
         likeButton.setImage(viewModel.likeButtonImage, for: .normal)
         likeButton.tintColor = viewModel.likeButtonTintColor
+        replyLabel.isHidden = viewModel.shouldHideReplyLabel
+        replyLabel.text = viewModel.replyString
     }
 }

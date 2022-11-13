@@ -21,6 +21,22 @@ final class TweetHeader: UICollectionReusableView {
     
     weak var delegate: TweetHeaderDelegate?
     
+    private let stack: UIStackView = {
+       let stack = UIStackView()
+        stack.axis = .vertical
+        stack.spacing = 8
+        stack.distribution = .fillProportionally
+        return stack
+    }()
+    
+    private let replyLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .lightGray
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.text = "→ replying to @joker"
+        return label
+    }()
+    
     private lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -36,7 +52,13 @@ final class TweetHeader: UICollectionReusableView {
         return imageView
     }()
     
-    private let userDetailsStack: UIStackView = {
+    private let imageCaptionStack: UIStackView = {
+        let stack = UIStackView()
+        stack.spacing = 12
+        return stack
+    }()
+    
+    private let labelStack: UIStackView = {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.distribution = .fillProportionally
@@ -164,16 +186,21 @@ final class TweetHeader: UICollectionReusableView {
     
     // MARK: - Selectors
     private func setupUI() {
-        addSubview(profileImageView)
-        addSubview(userDetailsStack)
+        addSubview(stack)
         addSubview(optionsButton)
         addSubview(captionLabel)
         addSubview(dateLabel)
         addSubview(statsView)
         addSubview(actionStack)
         
-        userDetailsStack.addArrangedSubview(fullnameLabel)
-        userDetailsStack.addArrangedSubview(usernameLabel)
+        stack.addArrangedSubview(replyLabel)
+        stack.addArrangedSubview(imageCaptionStack)
+        
+        imageCaptionStack.addArrangedSubview(profileImageView)
+        imageCaptionStack.addArrangedSubview(labelStack)
+        
+        labelStack.addArrangedSubview(fullnameLabel)
+        labelStack.addArrangedSubview(usernameLabel)
         
         statsView.addArrangedSubview(divider1)
         statsView.addArrangedSubview(retweetsLikesStack)
@@ -190,8 +217,7 @@ final class TweetHeader: UICollectionReusableView {
     }
     
     private func setupLayout() {
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
-        userDetailsStack.translatesAutoresizingMaskIntoConstraints = false
+        stack.translatesAutoresizingMaskIntoConstraints = false
         captionLabel.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         optionsButton.translatesAutoresizingMaskIntoConstraints = false
@@ -199,16 +225,12 @@ final class TweetHeader: UICollectionReusableView {
         actionStack.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            profileImageView.topAnchor.constraint(equalTo: topAnchor, constant: 16),
-            profileImageView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            stack.topAnchor.constraint(equalTo: topAnchor, constant: 8),
+            stack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
+            stack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             
-            userDetailsStack.topAnchor.constraint(equalTo: topAnchor, constant: 16),
-            userDetailsStack.leadingAnchor.constraint(equalTo: profileImageView.trailingAnchor, constant: 8),
-            userDetailsStack.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor),
-            
-            optionsButton.topAnchor.constraint(equalTo: topAnchor, constant: 16),
             optionsButton.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
-            optionsButton.centerYAnchor.constraint(equalTo: userDetailsStack.centerYAnchor),
+            optionsButton.centerYAnchor.constraint(equalTo: stack.centerYAnchor),
             
             captionLabel.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: 16),
             captionLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
@@ -282,8 +304,12 @@ final class TweetHeader: UICollectionReusableView {
         captionLabel.text = tweet.caption
         dateLabel.text = viewModel.headerTimeStamp
         retweetsLabel.attributedText = viewModel.retweetAttributedString
+        
         likesLabel.attributedText = viewModel.likesAttributedString
         likeButton.setImage(viewModel.likeButtonImage, for: .normal)
         likeButton.tintColor = viewModel.likeButtonTintColor
+        
+        replyLabel.isHidden = viewModel.shouldHideReplyLabel
+        replyLabel.text = viewModel.replyString
     }
 }

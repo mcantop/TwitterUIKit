@@ -8,7 +8,7 @@
 import FirebaseFirestoreSwift
 import FirebaseAuth
 
-struct User: Identifiable, Codable {
+struct User: Identifiable, Codable, Hashable {
     @DocumentID var id: String?
     
     let email: String
@@ -24,7 +24,7 @@ struct User: Identifiable, Codable {
     }
 }
 
-struct UserRelationStats: Codable {
+struct UserRelationStats: Codable, Hashable {
     var following: Int
     var followers: Int
 }

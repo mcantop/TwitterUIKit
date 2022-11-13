@@ -97,6 +97,33 @@ struct TweetService {
             }
     }
     
+    func fetchUserFeed(completion: @escaping([Tweet]) -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+                
+        var userTweets = [Tweet]()
+
+        fetchTweets(forUid: uid) { tweets in
+            userTweets = tweets
+            completion(Array(Set(userTweets)).sorted(by: { $0.timestamp > $1.timestamp } ))
+        }
+        
+        let userFollowingRef = usersRef.document(uid).collection("user-following")
+
+        userFollowingRef
+            .getDocuments { snapshot, _ in
+                guard let documents = snapshot?.documents else { return }
+                                       
+//                if snapshot?.documents
+                
+                documents.forEach { document in
+                    self.fetchTweets(forUid: document.documentID) { tweets in
+                        userTweets.append(contentsOf: tweets)
+                        completion(Array(Set(userTweets)).sorted(by: { $0.timestamp > $1.timestamp } ))
+                    }
+                }
+            }
+    }
+    
     func fetchTweet(forTweetId tweetId: String, completion: @escaping(Tweet) -> Void) {
         tweetsRef.document(tweetId)
             .getDocument { snapshot, error in

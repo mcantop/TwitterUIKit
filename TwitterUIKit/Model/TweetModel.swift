@@ -9,7 +9,7 @@ import FirebaseCore
 import FirebaseFirestoreSwift
 import FirebaseFirestore
 
-struct Tweet: Identifiable, Codable {
+struct Tweet: Identifiable, Codable, Hashable {
     @DocumentID var id: String?
     
     let uid: String
@@ -21,4 +21,6 @@ struct Tweet: Identifiable, Codable {
     var user: User?
     var isLiked: Bool? = false
     var replyingTo: String?
+    var isReply: Bool { return replyingTo != nil }
+    
 }
