@@ -39,25 +39,34 @@ final class FeedController: UICollectionViewController {
         
         TweetService.shared.fetchUserFeed { tweets in
             self.tweets = tweets
-            self.checkIfUserLikedTweets(self.tweets)
+            self.checkIfUserLikedTweets()
             self.collectionView.refreshControl?.endRefreshing()
         }
     }
     
-    private func fetchTweets() {
-        collectionView.refreshControl?.beginRefreshing()
-        
-        TweetService.shared.fetchTweets { tweets in
-            self.collectionView.refreshControl?.endRefreshing()
-            self.tweets = tweets
-            self.checkIfUserLikedTweets(tweets)
-        }
-    }
+//    private func fetchTweets() {
+//        collectionView.refreshControl?.beginRefreshing()
+//
+//        TweetService.shared.fetchTweets { tweets in
+//            self.collectionView.refreshControl?.endRefreshing()
+//            self.tweets = tweets
+//            self.checkIfUserLikedTweets(tweets)
+//        }
+//    }
     
-    private func checkIfUserLikedTweets(_ tweets: [Tweet]) {
-        for (index, tweet) in tweets.enumerated() {
+    private func checkIfUserLikedTweets() {
+        self.tweets.forEach { tweet in
             TweetService.shared.checkIfUserLikedTweet(tweet) { isLiked in
-                self.tweets[index].isLiked = isLiked
+                guard isLiked == true else {
+                    if let index = self.tweets.firstIndex(where: { $0.id == tweet.id }) {
+                        self.tweets[index].isLiked = false
+                    }
+                    return
+                }
+                
+                if let index = self.tweets.firstIndex(where: { $0.id == tweet.id }) {
+                    self.tweets[index].isLiked = true
+                }
             }
         }
     }
@@ -147,8 +156,11 @@ extension FeedController: UICollectionViewDelegateFlowLayout {
 // MARK: - TweetCellDelegate
 extension FeedController: TweetCellDelegate {
     func handleLikeTapped(_ cell: TweetCell) {
+        print("DEBUG: HERE")
         guard let tweet = cell.tweet else { return }
-            
+        print("DEBUG: HERE2")
+        print(tweet.isLiked)
+
             TweetService.shared.likeTweet(tweet) { result in
                 switch result {
                 case .failure(let error):
@@ -158,7 +170,9 @@ extension FeedController: TweetCellDelegate {
                     cell.tweet?.isLiked?.toggle()
                     let likes = isLiked ? tweet.likes - 1 : tweet.likes + 1
                     cell.tweet?.likes = likes
-                    self.checkIfUserLikedTweets(self.tweets)
+                    self.checkIfUserLikedTweets()
+                    
+                    print("here3")
                     
                     guard !isLiked else { return }
                     NotificationService.shared.uploadNotification(type: .like, tweet: tweet)
@@ -184,6 +198,6 @@ extension FeedController: TweetCellDelegate {
 
 extension FeedController: UploadTweetControllerDelegate {
     func reloadTableAfterTweetUpload() {
-        fetchTweets()
+        fetchUserFollowedTweets()
     }
 }
