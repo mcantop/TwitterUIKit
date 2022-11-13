@@ -8,7 +8,7 @@
 import UIKit
 
 protocol ProfileFilterViewDelegate: AnyObject {
-    func filterView(_ view: ProfileFilterView, didSelect indexPath: IndexPath)
+    func filterView(_ view: ProfileFilterView, didSelect index: Int)
 }
 
 final class ProfileFilterView: UIView {
@@ -24,6 +24,12 @@ final class ProfileFilterView: UIView {
         return collectionView
     }()
     
+    private let underlineView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .twitterBlue
+        return view
+    }()
+    
     // MARK: - Lifecycle
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -33,6 +39,19 @@ final class ProfileFilterView: UIView {
         
         setupUI()
         setupLayout()
+    }
+    
+    override func layoutSubviews() {
+        addSubview(underlineView)
+        
+        underlineView.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            underlineView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            underlineView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            underlineView.heightAnchor.constraint(equalToConstant: 2),
+            underlineView.widthAnchor.constraint(equalToConstant: frame.width / 3)
+        ])
     }
     
     required init?(coder: NSCoder) {
@@ -59,13 +78,13 @@ final class ProfileFilterView: UIView {
 
 extension ProfileFilterView: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return ProfileFilterOptions.allCases.count
+        return ProfileFilterOption.allCases.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ProfileFilterCell.reuseIdentifier, for: indexPath) as! ProfileFilterCell
         
-        let option = ProfileFilterOptions(rawValue: indexPath.row)
+        let option = ProfileFilterOption(rawValue: indexPath.row)
         cell.option = option
         
         return cell
@@ -74,13 +93,20 @@ extension ProfileFilterView: UICollectionViewDataSource {
 
 extension ProfileFilterView: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        delegate?.filterView(self, didSelect: indexPath)
+        let cell = collectionView.cellForItem(at: indexPath)
+        
+        let xPosition = cell?.frame.origin.x ?? 0
+        UIView.animate(withDuration: 0.3) {
+            self.underlineView.frame.origin.x = xPosition
+        }
+                
+        delegate?.filterView(self, didSelect: indexPath.row)
     }
 }
 
 extension ProfileFilterView: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let count = CGFloat(ProfileFilterOptions.allCases.count)
+        let count = CGFloat(ProfileFilterOption.allCases.count)
         return CGSize(width: frame.width / count, height: frame.height)
     }
     

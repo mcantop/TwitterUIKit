@@ -11,10 +11,20 @@ final class ProfileController: UICollectionViewController {
     // MARK: - Properties
     private var user: User
     
-    private var tweets = [Tweet]() {
-        didSet {
-            collectionView.reloadData()
+    private var tweets = [Tweet]()
+    private var replies = [Tweet]()
+    private var likes = [Tweet]()
+    
+    private var currentDataSource: [Tweet] {
+        switch selectedFilter {
+        case .tweets: return tweets
+        case .replies: return replies
+        case .likes: return likes
         }
+    }
+    
+    private var selectedFilter: ProfileFilterOption = .tweets {
+        didSet { collectionView.reloadData() }
     }
     
     // MARK: - Lifecycle
@@ -30,6 +40,8 @@ final class ProfileController: UICollectionViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         fetchUserTweets()
+        fetchUserReplies()
+        fetchUserLikedTweets()
         configureCollectionView()
         checkIfUserIsFollowed()
         checkFollowingFollowers()
@@ -46,6 +58,23 @@ final class ProfileController: UICollectionViewController {
                 
         TweetService.shared.fetchTweets(forUid: uid) { tweets in
             self.tweets = tweets
+            self.collectionView.reloadData()
+        }
+    }
+    
+    private func fetchUserReplies() {        
+        TweetService.shared.fetchUserTweetReplies(forUser: user) { tweets in
+            self.replies = tweets
+            
+            self.replies.forEach { reply in
+                print("DEBUG: Replying to \(reply.replyingTo)")
+            }
+        }
+    }
+    
+    private func fetchUserLikedTweets() {
+        TweetService.shared.fetchLikedTweets(forUser: user) { tweets in
+            self.likes = tweets
         }
     }
     
@@ -83,19 +112,22 @@ final class ProfileController: UICollectionViewController {
         collectionView.register(ProfileHeader.self,
                                 forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader,
                                 withReuseIdentifier: ProfileHeader.headerIdentifier)
+        
+        guard let tabHeight = tabBarController?.tabBar.frame.height else { return }
+        collectionView.contentInset.bottom = tabHeight
     }
 }
 
 // MARK: - UICollectionViewDataSource 
 extension ProfileController {
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tweets.count
+        return currentDataSource.count
     }
     
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TweetCell.reuseIdentifier, for: indexPath) as! TweetCell
         
-        cell.tweet = tweets[indexPath.row]
+        cell.tweet = currentDataSource[indexPath.row]
         
         return cell
     }
@@ -118,7 +150,7 @@ extension ProfileController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        let viewModel = TweetViewModel(tweet: tweets[indexPath.row])
+        let viewModel = TweetViewModel(tweet: currentDataSource[indexPath.row])
         let height = viewModel.size(forWidth: view.frame.width).height
         
         return CGSize(width: view.frame.width,
@@ -128,6 +160,10 @@ extension ProfileController: UICollectionViewDelegateFlowLayout {
 
 // MARK: - ProfileHeaderDelegate
 extension ProfileController: ProfileHeaderDelegate {
+    func didSelect(filter: ProfileFilterOption) {
+        self.selectedFilter = filter
+    }
+    
     func handleEditProfileFollow(_ header: ProfileHeader) {
         guard let uid = user.id else { return }
         guard let isFollowed = user.isFollowed else { return }

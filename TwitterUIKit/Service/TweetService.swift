@@ -11,6 +11,7 @@ import FirebaseAuth
 
 private let usersRef = Firestore.firestore().collection("users")
 private let tweetsRef = Firestore.firestore().collection("tweets")
+private let repliesRef = Firestore.firestore().collection("tweet-replies")
 
 struct TweetService {
     static let shared = TweetService()
@@ -18,7 +19,7 @@ struct TweetService {
     func uploadTweet(type: UploadTweetConfiguration, caption: String, completion: @escaping(Result<Void, Error>) -> Void) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         
-        let data = ["uid": uid,
+        var data = ["uid": uid,
                     "timestamp": Timestamp(date: Date()),
                     // "timestamp": Int(Date().timeIntervalSince1970),
                     "caption": caption,
@@ -44,21 +45,56 @@ struct TweetService {
         case .reply(let tweet):
             guard let tweetId = tweet.id else { return }
             
-            let tweetRepliesRef = tweetsRef.document(tweetId).collection("tweet-replies")
+            data["replyingTo"] = tweet.user?.username
             
-            tweetRepliesRef
-                .document()
+            let tweetRepliesRef = tweetsRef.document(tweetId).collection("tweet-replies")
+            let userRepliesRef = usersRef.document(uid).collection("user-replies")
+            let tweetRepliesDocRef = tweetRepliesRef.document()
+            
+            tweetRepliesDocRef
                 .setData(data) { error in
                     if let error = error {
                         completion(.failure(error))
                         return
                     }
                     
-                    print("DEBUG: REPLIED WITH SUCCESS")
-                    completion(.success(()))
+                    let replyData = ["tweetId": tweetId,
+                                     "tweetReplyId": tweetRepliesDocRef.documentID,
+                                     "uid": uid] as [String: Any]
+                    
+                    repliesRef.document()
+                        .setData(replyData) { _ in
+                            completion(.success(()))
+                        }
                 }
-            
         }
+        
+    }
+    
+    func fetchUserTweetReplies(forUser user: User, completion: @escaping([Tweet]) -> Void) {
+        guard let uid = user.id else { return }
+        var replies = [Tweet]()
+        
+        repliesRef.whereField("uid", isEqualTo: uid)
+            .getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents else { return }
+                
+                documents.forEach { document in
+                    guard let reply = try? document.data(as: Reply.self) else { return }
+                    
+                    tweetsRef.document(reply.tweetId).collection("tweet-replies").document(reply.tweetReplyId)
+                        .getDocument { snapshot, _ in
+                            guard let snapshot = snapshot else { return }
+                            guard var tweetReply = try? snapshot.data(as: Tweet.self) else { return }
+                            
+                            UserService.shared.fetchUser(withUid: tweetReply.uid) { user in
+                                tweetReply.user = user
+                                replies.append(tweetReply)
+                                completion(replies.sorted(by: { $0.timestamp > $1.timestamp }))
+                            }
+                        }
+                }
+            }
     }
     
     func fetchTweet(forTweetId tweetId: String, completion: @escaping(Tweet) -> Void) {
@@ -112,7 +148,27 @@ struct TweetService {
                 documents.forEach { document in
                     fetchTweet(forTweetId: document.documentID) { tweet in
                         tweets.append(tweet)
-                        completion(tweets.sorted(by: { $0.timestamp > $1.timestamp }))
+                        completion(tweets.sorted(by: { $0.timestamp > $1.timestamp } ))
+                    }
+                }
+            }
+    }
+    
+    func fetchLikedTweets(forUser user: User, completion: @escaping([Tweet]) -> Void) {
+        guard let uid = user.id else { return }
+        
+        usersRef.document(uid).collection("user-likes")
+            .getDocuments { snapshot, _ in
+                guard let documents = snapshot?.documents else { return }
+                
+                var tweets = [Tweet]()
+                
+                documents.forEach { document in
+                    fetchTweet(forTweetId: document.documentID) { likedTweet in
+                        var tweet = likedTweet
+                        tweet.isLiked = true
+                        tweets.append(tweet)
+                        completion(tweets.sorted(by: { $0.timestamp > $1.timestamp } ))
                     }
                 }
             }

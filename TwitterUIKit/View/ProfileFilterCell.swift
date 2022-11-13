@@ -11,7 +11,7 @@ final class ProfileFilterCell: UICollectionViewCell {
     // MARK: - Properties
     static let reuseIdentifier = "ProfileFilterCell"
     
-    var option: ProfileFilterOptions! {
+    var option: ProfileFilterOption! {
         didSet {
             titleLabel.text = option.description
         }

@@ -88,6 +88,14 @@ final class TweetCell: UICollectionViewCell {
     
     private let underlineView = UIView()
     
+    private let replyLabel: UILabel = {
+       let label = UILabel()
+        label.textColor = .lightGray
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.text = "→ replying to @joker"
+        return label
+    }()
+    
     // MARK: - Lifecycle
     override init(frame: CGRect) {
         super.init(frame: frame)

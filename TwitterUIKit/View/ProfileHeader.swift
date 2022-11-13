@@ -10,6 +10,7 @@ import UIKit
 protocol ProfileHeaderDelegate: AnyObject {
     func handleDismiss()
     func handleEditProfileFollow(_ header: ProfileHeader)
+    func didSelect(filter: ProfileFilterOption)
 }
 
 final class ProfileHeader: UICollectionReusableView {
@@ -127,12 +128,6 @@ final class ProfileHeader: UICollectionReusableView {
     
     private let filterBar = ProfileFilterView()
     
-    private let underlineView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .twitterBlue
-        return view
-    }()
-    
     // MARK: - Lifecycle
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -190,7 +185,6 @@ final class ProfileHeader: UICollectionReusableView {
         addSubview(userDetailsStack)
         addSubview(followStack)
         addSubview(filterBar)
-        addSubview(underlineView)
         
         userDetailsStack.addArrangedSubview(fullnameLabel)
         userDetailsStack.addArrangedSubview(usernameLabel)
@@ -212,7 +206,6 @@ final class ProfileHeader: UICollectionReusableView {
         editProfileFollowButton.translatesAutoresizingMaskIntoConstraints = false
         userDetailsStack.translatesAutoresizingMaskIntoConstraints = false
         filterBar.translatesAutoresizingMaskIntoConstraints = false
-        underlineView.translatesAutoresizingMaskIntoConstraints = false
         followStack.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -244,24 +237,16 @@ final class ProfileHeader: UICollectionReusableView {
             filterBar.leadingAnchor.constraint(equalTo: leadingAnchor),
             filterBar.trailingAnchor.constraint(equalTo: trailingAnchor),
             filterBar.bottomAnchor.constraint(equalTo: bottomAnchor),
-            filterBar.heightAnchor.constraint(equalToConstant: 50),
-            
-            underlineView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            underlineView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            underlineView.heightAnchor.constraint(equalToConstant: 2),
-            underlineView.widthAnchor.constraint(equalToConstant: frame.width / 3)
+            filterBar.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
 }
 
 // MARK: - ProfileFilterViewDelegate
 extension ProfileHeader: ProfileFilterViewDelegate {
-    func filterView(_ view: ProfileFilterView, didSelect indexPath: IndexPath) {
-        guard let cell = view.collectionView.cellForItem(at: indexPath) as? ProfileFilterCell else { return }
-        
-        let xPosition = cell.frame.origin.x
-        UIView.animate(withDuration: 0.3) {
-            self.underlineView.frame.origin.x = xPosition
-        }
+    func filterView(_ view: ProfileFilterView, didSelect index: Int) {
+        guard let filter = ProfileFilterOption(rawValue: index) else { return }
+                
+        delegate?.didSelect(filter: filter)
     }
 }

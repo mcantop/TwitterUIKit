@@ -20,4 +20,5 @@ struct Tweet: Identifiable, Codable {
     var retweets: Int
     var user: User?
     var isLiked: Bool? = false
+    var replyingTo: String?
 }
