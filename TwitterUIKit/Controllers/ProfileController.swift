@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 final class ProfileController: UICollectionViewController {
     // MARK: - Properties
@@ -147,7 +148,14 @@ extension ProfileController {
 // MARK: - UICollectionViewDelegateFlowLayout
 extension ProfileController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, referenceSizeForHeaderInSection section: Int) -> CGSize {
-        return CGSize(width: view.frame.width, height: 370)
+        
+        var height: CGFloat = 320
+        
+        if let bio = user.bio {
+            height += 40
+        }
+        
+        return CGSize(width: view.frame.width, height: height)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
@@ -203,7 +211,7 @@ extension ProfileController: ProfileHeaderDelegate {
                     print("DEBUG: Successfully followed a user.")
                     self.user.isFollowed = true
                     header.editProfileFollowButton.setTitle("Unfollow", for: .normal)
-                    NotificationService.shared.uploadNotification(type: .follow, user: self.user)
+                    NotificationService.shared.uploadNotification(toUser: self.user, type: .follow)
                     self.checkFollowingFollowers()
                 }
             }
@@ -218,6 +226,17 @@ extension ProfileController: ProfileHeaderDelegate {
 
 // MARK: - EditProfileControllerDelegate
 extension ProfileController: EditProfileControllerDelegate {
+    func handleLogout() {
+            do {
+                try Auth.auth().signOut()
+                let nav = UINavigationController(rootViewController: LoginController())
+                nav.modalPresentationStyle = .fullScreen
+                self.present(nav, animated: true)
+            } catch let error {
+                print("DEBUG: Failed to sign out with error: \(error.localizedDescription)")
+            }
+    }
+    
     func controller(_ controller: EditProfileController, wantsToUpdate user: User) {
         controller.dismiss(animated: true)
         self.user = user

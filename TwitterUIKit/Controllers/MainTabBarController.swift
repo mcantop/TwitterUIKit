@@ -8,8 +8,14 @@
 import UIKit
 import FirebaseAuth
 
+enum ActionButtonConfiguration {
+    case tweet
+    case message
+}
+
 final class MainTabBarController: UITabBarController {
     // MARK: - Properties
+    private var buttonConfig: ActionButtonConfiguration = .tweet
     private let buttonSize: CGFloat = 56
     private var user: User? {
         didSet {
@@ -35,7 +41,6 @@ final class MainTabBarController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        logoutUser()
         view.backgroundColor = .twitterBlue
         authenticateUserAndConfigureUI()
     }
@@ -65,20 +70,21 @@ final class MainTabBarController: UITabBarController {
         }
     }
     
-    private func logoutUser() {
-        do {
-            try Auth.auth().signOut()
-        } catch let error {
-            print("DEBUG: Failed to sign out with error: \(error.localizedDescription)")
-        }
-    }
-    
     // MARK: - Selectors
     @objc
     private func actionButtonTapped() {
-        guard let user = user else { return }
-        let controller = UploadTweetController(user: user, config: .tweet)
-        controller.delegate = feed
+        let controller: UIViewController
+        
+        switch buttonConfig {
+        case .tweet:
+            guard let user = user else { return }
+//            controller.delegate = feed
+            controller = UploadTweetController(user: user, config: .tweet)
+        case .message:
+            controller = SearchController(config: .message)
+
+        }
+        
         let nav = UINavigationController(rootViewController: controller)
         nav.modalPresentationStyle = .fullScreen
         present(nav, animated: true)
@@ -87,6 +93,7 @@ final class MainTabBarController: UITabBarController {
     // MARK: - Helpers
     private func configureUI() {
         view.addSubview(actionButton)
+        self.delegate = self
     
         actionButton.layer.cornerRadius = buttonSize / 2
         actionButton.translatesAutoresizingMaskIntoConstraints = false
@@ -101,7 +108,7 @@ final class MainTabBarController: UITabBarController {
     private func configureViewControllers() {
         let feedNavigation = templateNavigationController(image: UIImage.feed, rootViewController: feed)
 
-        let explore = ExploreController()
+        let explore = SearchController(config: .search)
         let exploreNavigation = templateNavigationController(image: UIImage.explore, rootViewController: explore)
         
         let notifications = NotificationsController()
@@ -135,5 +142,14 @@ final class MainTabBarController: UITabBarController {
         nav.tabBarItem.image = image
         
         return nav
+    }
+}
+
+extension MainTabBarController: UITabBarControllerDelegate {
+    func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
+        let index = viewControllers?.firstIndex(of: viewController)
+        let image = index == 3 ? "mail" : "new_tweet"
+        self.actionButton.setImage(UIImage(named: image), for: .normal)
+        buttonConfig = index == 3 ? .message : .tweet
     }
 }

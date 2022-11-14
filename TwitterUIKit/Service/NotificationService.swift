@@ -11,8 +11,9 @@ import FirebaseAuth
 struct NotificationService {
     static let shared = NotificationService()
     
-    func uploadNotification(type: NotificationType, tweet: Tweet? = nil, user: User? = nil) {
+    func uploadNotification(toUser user: User, type: NotificationType, tweetId: String? = nil) {
         guard let uid = Auth.auth().currentUser?.uid else { return }
+        guard let userId = user.id else { return }
         
         let usersRef = Firestore.firestore().collection("users")
         
@@ -22,20 +23,30 @@ struct NotificationService {
                     
         ] as [String: Any]
         
-        if let tweet = tweet {
-            guard let tweetUid = tweet.user?.id else { return }
-            data["tweetId"] = tweet.id
-            usersRef.document(tweetUid).collection("user-notifications").document()
-                .setData(data) { _ in
-                    print("DEBUG: Successfully sent notification of type: \(type) to user: \(tweetUid)..")
-                }
-        } else {
-            guard let userId = user?.id else { return }
-            usersRef.document(userId).collection("user-notifications").document()
-                .setData(data) { _ in
-                    print("DEBUG: Successfully sent notification of type: \(type) to user: \(userId)..")
-                }
+        if let tweetId = tweetId {
+            data["tweetId"] = tweetId
         }
+        
+        usersRef.document(userId).collection("user-notifications").document()
+            .setData(data) { _ in
+                
+            }
+
+        
+//        if let tweetId = tweetId {
+//            guard let tweetUid = tweet.user?.id else { return }
+//            data["tweetId"] = tweet.id
+//            usersRef.document(user.id).collection("user-notifications").document()
+//                .setData(data) { _ in
+//                    print("DEBUG: Successfully sent notification of type: \(type) to user: \(tweetUid)..")
+//                }
+//        } else {
+//            guard let userId = user?.id else { return }
+//            usersRef.document(userId).collection("user-notifications").document()
+//                .setData(data) { _ in
+//                    print("DEBUG: Successfully sent notification of type: \(type) to user: \(userId)..")
+//                }
+//        }
         
     }
     
@@ -48,7 +59,9 @@ struct NotificationService {
         
         usersRef.document(uid).collection("user-notifications").getDocuments { snapshot, _ in
             guard let documents = snapshot?.documents else { return }
-                        
+                                  
+            if documents.count == 0 { completion(notifications) }
+            
             documents.forEach { document in
                 guard var notification = try? document.data(as: Notification.self) else { return }
                 

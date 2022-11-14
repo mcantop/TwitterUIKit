@@ -112,8 +112,8 @@ struct TweetService {
         userFollowingRef
             .getDocuments { snapshot, _ in
                 guard let documents = snapshot?.documents else { return }
-                                       
-//                if snapshot?.documents
+                               
+                if documents.count == 0 { completion(userTweets) }
                 
                 documents.forEach { document in
                     self.fetchTweets(forUid: document.documentID) { tweets in

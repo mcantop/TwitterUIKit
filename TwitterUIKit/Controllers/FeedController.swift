@@ -175,11 +175,10 @@ extension FeedController: TweetCellDelegate {
                     let likes = isLiked ? tweet.likes - 1 : tweet.likes + 1
                     cell.tweet?.likes = likes
                     self.checkIfUserLikedTweets()
-                    
-                    print("here3")
-                    
+                                        
                     guard !isLiked else { return }
-                    NotificationService.shared.uploadNotification(type: .like, tweet: tweet)
+                    guard let user = tweet.user else { return }
+                    NotificationService.shared.uploadNotification(toUser: user, type: .like, tweetId: tweet.id)
                 }
             }
     }

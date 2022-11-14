@@ -114,7 +114,8 @@ final class UploadTweetController: UIViewController {
                 self.delegate?.reloadTableAfterTweetUpload()
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                     if case .reply(let tweet) = self.config {
-                        NotificationService.shared.uploadNotification(type: .reply, tweet: tweet)
+                        guard let user = tweet.user else { return }
+                        NotificationService.shared.uploadNotification(toUser: user, type: .reply, tweetId: tweet.id)
                     }
                     
                     self.dismiss(animated: true)
