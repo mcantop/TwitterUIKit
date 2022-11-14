@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import ActiveLabel
 
 protocol UploadTweetControllerDelegate: AnyObject {
     func reloadTableAfterTweetUpload()
@@ -57,13 +58,13 @@ final class UploadTweetController: UIViewController {
         return imageView
     }()
     
-    private lazy var replyLabel: UILabel = {
-        let label = UILabel()
+    private lazy var replyLabel: ActiveLabel = {
+        let label = ActiveLabel()
         label.font = UIFont.systemFont(ofSize: 14)
         label.textColor = .lightGray
         label.translatesAutoresizingMaskIntoConstraints = false
         label.widthAnchor.constraint(equalToConstant: view.frame.width).isActive = true
-        label.text = "replying to @future"
+        label.mentionColor = .twitterBlue
         return label
     }()
     
@@ -85,6 +86,7 @@ final class UploadTweetController: UIViewController {
         
         configureUI()
         configureLayout()
+        configureMentionHandler()
         
         switch config {
         case .tweet:
@@ -157,6 +159,12 @@ final class UploadTweetController: UIViewController {
     private func configureNavigationBar() {
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(handleCancel))
         navigationItem.rightBarButtonItem = UIBarButtonItem(customView: actionButton)
+    }
+    
+    private func configureMentionHandler() {
+        replyLabel.handleMentionTap { mention in
+            print("DEBUG: Mentioned user is \(mention)")
+        }
     }
 }
 

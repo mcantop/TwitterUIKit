@@ -177,4 +177,18 @@ struct UserService {
                 }
             }
     }
+    
+    func fetchUser(withUsername username: String, completion: @escaping(User) -> Void) {
+        Firestore.firestore().collection("users")
+            .whereField("username", isEqualTo: username)
+            .getDocuments { snapshot, error in
+                guard let documents = snapshot?.documents else { return }
+                
+                documents.forEach { document in
+                    self.fetchUser(withUid: document.documentID) { user in
+                        completion(user)
+                    }
+                }
+            }
+    }
 }

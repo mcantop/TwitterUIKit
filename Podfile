@@ -13,5 +13,6 @@ pod 'FirebaseStorage'
 pod 'FirebaseDatabase'
 pod 'FirebaseFirestoreSwift'
 pod 'SDWebImage'
+pod 'ActiveLabel'
 
 end
