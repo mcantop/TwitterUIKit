@@ -7,9 +7,15 @@
 
 import UIKit
 
+protocol EditProfileCellDelegate: AnyObject {
+    func updateUserInfo (_ cell: EditProfileCell)
+}
+
 final class EditProfileCell: UITableViewCell {
     // MARK: - Properties
     static let reuseIdentifier = "EditProfileCell"
+    
+    weak var delegate: EditProfileCellDelegate?
     
     var viewModel: EditProfileViewModel? {
         didSet { configure() }
@@ -18,11 +24,10 @@ final class EditProfileCell: UITableViewCell {
     private let titleLabel: UILabel = {
        let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14)
-        label.text = "Test title"
         return label
     }()
     
-    private lazy var infoTextField: UITextField = {
+    lazy var infoTextField: UITextField = {
        let textField = UITextField()
         textField.borderStyle = .none
         textField.font = UIFont.systemFont(ofSize: 14)
@@ -33,7 +38,7 @@ final class EditProfileCell: UITableViewCell {
         return textField
     }()
     
-    private let bioTextView: InputTextView = {
+    let bioTextView: InputTextView = {
         let textView = InputTextView()
         textView.font = UIFont.systemFont(ofSize: 14)
         textView.textColor = .twitterBlue
@@ -56,7 +61,7 @@ final class EditProfileCell: UITableViewCell {
     // MARK: - Selectors
     @objc
     private func handleUpdateUserInfo() {
-        
+        delegate?.updateUserInfo(self)
     }
     
     // MARK: Helpers
@@ -66,6 +71,8 @@ final class EditProfileCell: UITableViewCell {
         contentView.addSubview(titleLabel)
         contentView.addSubview(infoTextField)
         contentView.addSubview(bioTextView)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(handleUpdateUserInfo), name: UITextView.textDidEndEditingNotification, object: nil)
     }
     
     private func setupLayout() {
@@ -80,7 +87,7 @@ final class EditProfileCell: UITableViewCell {
             
             infoTextField.topAnchor.constraint(equalTo: topAnchor, constant: 6),
             infoTextField.leadingAnchor.constraint(equalTo: titleLabel.trailingAnchor, constant: 16),
-            infoTextField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -1616),
+            infoTextField.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -16),
             infoTextField.bottomAnchor.constraint(equalTo: bottomAnchor),
             
             bioTextView.topAnchor.constraint(equalTo: topAnchor, constant: 6),
@@ -95,5 +102,9 @@ final class EditProfileCell: UITableViewCell {
         
         infoTextField.isHidden = viewModel.shouldHideTextField
         bioTextView.isHidden = viewModel.shouldHideTextView
+        titleLabel.text = viewModel.titleText
+        infoTextField.text = viewModel.optionValue
+        bioTextView.text = viewModel.optionValue
+        bioTextView.placeholderLabel.isHidden = viewModel.shouldHidePlaceholderLabel
     }
 }

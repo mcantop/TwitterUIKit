@@ -12,10 +12,11 @@ struct User: Identifiable, Codable, Hashable {
     @DocumentID var id: String?
     
     let email: String
-    let username: String
-    let fullname: String
-    let profileImageUrl: URL
+    var username: String
+    var fullname: String
+    var profileImageUrl: URL
     
+    var bio: String?
     var isFollowed: Bool? = false
     var stats: UserRelationStats?
     

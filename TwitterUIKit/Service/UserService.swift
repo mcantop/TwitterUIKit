@@ -7,6 +7,7 @@
 
 import FirebaseAuth
 import FirebaseFirestore
+import FirebaseStorage
 
 struct UserService {
     static let shared = UserService()
@@ -139,6 +140,41 @@ struct UserService {
                         let stats = UserRelationStats(following: following!, followers: followers!)
                         completion(stats)
                     }
+            }
+    }
+    
+    func saveUserData(user: User, completion: @escaping() -> Void) {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        let data = ["fullname": user.fullname,
+                      "username": user.username,
+                      "bio": user.bio ?? ""]
+        
+        Firestore.firestore().collection("users").document(uid)
+            .updateData(data) { _ in
+                completion()
+            }
+    }
+    
+    func updateProfileImage(image: UIImage, completion: @escaping(URL?) -> Void) {
+        guard let imageData = image.jpegData(compressionQuality: 0.3) else { return }
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        
+        let filename = NSUUID().uuidString
+        let storageRef = Storage.storage().reference(withPath: "/profile_image/\(filename)")
+        
+        storageRef
+            .putData(imageData) { meta, error in
+                storageRef.downloadURL { url, error in
+                    guard let profileImageUrl = url?.absoluteString else { return }
+                    
+                    let data = ["profileImageUrl": profileImageUrl]
+                    
+                    Firestore.firestore().collection("users").document(uid)
+                        .updateData(data) { error in
+                            completion(url)
+                        }
+                }
             }
     }
 }

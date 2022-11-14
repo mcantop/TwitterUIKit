@@ -17,7 +17,7 @@ final class EditProfileHeader: UIView {
     
     private let user: User
 
-    private let profileImageView: UIImageView = {
+    let profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true

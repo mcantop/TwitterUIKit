@@ -7,10 +7,24 @@
 
 import UIKit
 
+protocol EditProfileControllerDelegate: AnyObject {
+    func controller(_ controller: EditProfileController, wantsToUpdate user: User)
+}
+
 final class EditProfileController: UITableViewController {
     // MARK: - Properties
-    private let user: User
+    weak var delegate: EditProfileControllerDelegate?
+    
+    private var user: User
+    private var userInfoChanged = false
+    private var imageChanged: Bool {
+        return selectedImage != nil
+    }
     private lazy var headerView = EditProfileHeader(user: user)
+    private let imagePicker = UIImagePickerController()
+    private var selectedImage: UIImage? {
+        didSet { headerView.profileImageView.image = selectedImage }
+    }
     
     // MARK: - Lifecycle
     init(user: User) {
@@ -27,9 +41,40 @@ final class EditProfileController: UITableViewController {
         
         configureNavigationBar()
         configureTableView()
+        configureImagePicker()
     }
     
     // MARK: - API
+    private func updateUserData() {
+        if imageChanged && !userInfoChanged {
+            print("DEBUG: Changed profile image..")
+            updateProfileImage()
+        }
+        
+        if userInfoChanged && !imageChanged {
+            print("DEBUG: Changed user info..")
+            UserService.shared.saveUserData(user: user) {
+                self.delegate?.controller(self, wantsToUpdate: self.user)
+            }
+        }
+        
+        if userInfoChanged && imageChanged {
+            print("DEBUG: Changed both..")
+            UserService.shared.saveUserData(user: user) {
+                self.updateProfileImage()
+            }
+        }
+    }
+    
+    private func updateProfileImage() {
+        guard let image = selectedImage else { return }
+        
+        UserService.shared.updateProfileImage(image: image) { profileImageUrl in
+            guard let profileImageUrl = profileImageUrl else { return }
+            self.user.profileImageUrl = profileImageUrl
+            self.delegate?.controller(self, wantsToUpdate: self.user)
+        }
+    }
     
     // MARK: - Selectors
     @objc
@@ -39,7 +84,8 @@ final class EditProfileController: UITableViewController {
         
     @objc
     private func handleDone() {
-        dismiss(animated: true)
+        view.endEditing(true)
+        updateUserData()
     }
     
     // MARK: - Helpers
@@ -67,8 +113,14 @@ final class EditProfileController: UITableViewController {
         headerView.delegate = self
         tableView.register(EditProfileCell.self, forCellReuseIdentifier: EditProfileCell.reuseIdentifier)
     }
+    
+    private func configureImagePicker() {
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
+    }
 }
 
+// MARK: - UITableViewDataSource
 extension EditProfileController {
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return EditProfileOption.allCases.count
@@ -79,11 +131,13 @@ extension EditProfileController {
         
         guard let option = EditProfileOption(rawValue: indexPath.row) else { return cell }
         cell.viewModel = EditProfileViewModel(user: user, option: option)
+        cell.delegate = self
         
         return cell
     }
 }
 
+// MARK: - UITableViewDelegate
 extension EditProfileController {
     override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         guard let option = EditProfileOption(rawValue: indexPath.row) else { return 0 }
@@ -92,8 +146,41 @@ extension EditProfileController {
     }
 }
 
+// MARK: - EditProfileHeaderDelegate
 extension EditProfileController: EditProfileHeaderDelegate {
     func didTapChangeProfilePhoto() {
-        print("DEBUG: Handle change photo")
+        present(imagePicker, animated: true)
+    }
+}
+
+// MARK: - UIImagePickerControllerDelegate
+extension EditProfileController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        guard let image = info[.editedImage] as? UIImage else { return }
+        
+        self.selectedImage = image
+        
+        dismiss(animated: true)
+    }
+}
+
+// MARK: - EditProfileCellDelegate
+extension EditProfileController: EditProfileCellDelegate {
+    func updateUserInfo(_ cell: EditProfileCell) {
+        guard let viewModel = cell.viewModel else { return }
+        
+        userInfoChanged = true
+        navigationItem.rightBarButtonItem?.isEnabled = true
+        
+        switch viewModel.option {
+        case .fullname:
+            guard let fullname = cell.infoTextField.text else { return }
+            user.fullname = fullname
+        case .username:
+            guard let username = cell.infoTextField.text else { return }
+            user.username = username
+        case .bio:
+            user.bio = cell.bioTextView.text
+        }
     }
 }
